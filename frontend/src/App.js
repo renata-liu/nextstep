@@ -17,6 +17,7 @@ function App() {
         <section className="hero-section">
           <h1>Your Next Job, One Step Away</h1>
           <p className="subtitle">Streamline your job search with smart interview preparation and application tracking</p>
+          <button className="hero-btn">Get Started</button>
         </section>
 
         <section className="features-section" id="features">
@@ -41,11 +42,6 @@ function App() {
             </ul>
             <button className="feature-btn">Track Applications</button>
           </div>
-        </section>
-
-        <section className="cta-section">
-          <h2>Take Your First Step Today</h2>
-          <button className="cta-btn">Get Started</button>
         </section>
       </main>
 
