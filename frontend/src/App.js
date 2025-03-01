@@ -5,6 +5,8 @@ import MockInterview from './components/MockInterview';
 import HomePage from './components/HomePage';
 import Navbar from './components/Navbar';
 import Login from './components/Login';
+import Dashboard from './components/Dashboard';
+import ProtectedRoute from './components/ProtectedRoute';
 
 function App() {
   return (
@@ -14,8 +16,17 @@ function App() {
         <main className="main-content">
           <Routes>
             <Route path="/" element={<HomePage />} />
-            <Route path="/mock-interview" element={<MockInterview />} />
+            <Route path="/mock-interview" element={
+              <ProtectedRoute>
+                <MockInterview />
+              </ProtectedRoute>
+            } />
             <Route path="/login" element={<Login />} />
+            <Route path="/dashboard" element={
+              <ProtectedRoute>
+                <Dashboard />
+              </ProtectedRoute>
+            } />
           </Routes>
         </main>
         <footer className="footer">
