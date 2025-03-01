@@ -1,0 +1,246 @@
+.mock-interview-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem;
+  margin-top: 6rem;
+}
+
+.interview-header {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.interview-header h1 {
+  color: var(--text-color);
+  font-size: 2.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.interview-header p {
+  color: var(--text-color);
+  opacity: 0.8;
+  margin-bottom: 1rem;
+}
+
+.interview-main {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2rem;
+}
+
+.video-section {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.camera-container {
+  background-color: var(--light-bg);
+  border-radius: 1rem;
+  overflow: hidden;
+  aspect-ratio: 16/9;
+}
+
+.camera-feed {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.timer-container {
+  background-color: var(--white);
+  padding: 1.5rem;
+  border-radius: 1rem;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.timer-display {
+  font-size: 3rem;
+  font-weight: 700;
+  text-align: center;
+  color: var(--primary-color);
+  margin-bottom: 1rem;
+}
+
+.timer-controls {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+}
+
+.timer-button {
+  padding: 0.75rem 1.5rem;
+  border: none;
+  border-radius: 0.5rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.timer-button.start {
+  background-color: var(--primary-color);
+  color: white;
+}
+
+.timer-button.stop {
+  background-color: #dc2626;
+  color: white;
+}
+
+.timer-button:disabled {
+  background-color: #6b7280;
+  cursor: not-allowed;
+  opacity: 0.8;
+  transform: none;
+}
+
+.timer-button:not(:disabled):hover {
+  transform: translateY(-2px);
+}
+
+.question-section {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  text-align: center;
+}
+
+.question-card {
+  background-color: var(--white);
+  padding: 2rem;
+  border-radius: 1rem;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.question-card h2 {
+  color: var(--text-color);
+  margin-bottom: 1rem;
+  font-size: 1.25rem;
+}
+
+.question-text {
+  font-size: 1.5rem;
+  color: var(--primary-color);
+  margin-bottom: 1.5rem;
+  line-height: 1.4;
+}
+
+.next-question-button {
+  background-color: var(--primary-color);
+  color: white;
+  padding: 0.75rem 1.5rem;
+  border: none;
+  border-radius: 0.5rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  width: 100%;
+}
+
+.next-question-button:disabled {
+  background-color: #a0a0a0;
+  cursor: not-allowed;
+  transform: none;
+  opacity: 0.7;
+}
+
+.next-question-button:not(:disabled):hover {
+  background-color: var(--secondary-color);
+  transform: translateY(-2px);
+}
+
+.tips-card {
+  background-color: var(--light-bg);
+  padding: 2rem;
+  border-radius: 1rem;
+}
+
+.tips-card h3 {
+  color: var(--text-color);
+  margin-bottom: 1rem;
+  font-size: 1.25rem;
+}
+
+.tips-card ul {
+  list-style-type: none;
+  padding: 0;
+}
+
+.tips-card li {
+  color: var(--text-color);
+  margin-bottom: 0.75rem;
+  padding-left: 1.5rem;
+  position: relative;
+}
+
+.tips-card li:before {
+  content: "•";
+  color: var(--accent-color);
+  position: absolute;
+  left: 0;
+  font-weight: bold;
+}
+
+.question-counter {
+  display: inline-block;
+  background-color: var(--primary-color);
+  color: white;
+  padding: 0.5rem 1rem;
+  border-radius: 2rem;
+  font-weight: 600;
+  font-size: 0.875rem;
+}
+
+.session-complete {
+  text-align: center;
+}
+
+.completion-message {
+  color: var(--primary-color);
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin-bottom: 1.5rem;
+}
+
+.new-session-button {
+  background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end));
+  color: white;
+  padding: 0.75rem 1.5rem;
+  border: none;
+  border-radius: 0.5rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  width: 100%;
+}
+
+.new-session-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+@media (max-width: 768px) {
+  .interview-main {
+    grid-template-columns: 1fr;
+  }
+
+  .mock-interview-container {
+    padding: 1rem;
+  }
+
+  .interview-header h1 {
+    font-size: 2rem;
+  }
+
+  .timer-display {
+    font-size: 2.5rem;
+  }
+
+  .question-text {
+    font-size: 1.25rem;
+  }
+
+  .question-counter {
+    font-size: 0.75rem;
+  }
+} 
