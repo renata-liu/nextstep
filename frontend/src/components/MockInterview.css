@@ -5,14 +5,10 @@
   margin-top: 4rem;
 }
 
-h1 {
+.mock-interview-container h1 {
   text-align: center;
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  padding-top: 6rem;
-  z-index: 100;
+  color: var(--text-color);
+  font-size: 2.5rem;
 }
 
 .interview-header h1 {
@@ -32,12 +28,14 @@ h1 {
   gap: 2rem;
   margin: 0 auto;
   max-width: 1400px;
-  padding-top: 6rem;
+  padding-top: 1rem;
 }
 
 .content-section {
   flex: 1;
   max-width: 70%;
+  padding-top: 0rem;
+  margin-top: 0rem;
 }
 
 .controls-section {
@@ -74,7 +72,7 @@ h1 {
   border-radius: 1rem;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   display: flex;
-  align-items: center;
+  align-items: baseline;
   gap: 1rem;
 }
 
@@ -90,6 +88,7 @@ h1 {
   color: var(--primary-color);
   margin: 0;
   line-height: 1.4;
+  flex: 1;
 }
 
 .timer-container {
@@ -272,5 +271,9 @@ h1 {
     flex-direction: column;
     align-items: flex-start;
     gap: 0.5rem;
+  }
+
+  .question-container h2 {
+    margin-bottom: 0.5rem;
   }
 } 
