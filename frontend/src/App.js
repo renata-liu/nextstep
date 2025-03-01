@@ -6,6 +6,7 @@ import HomePage from './components/HomePage';
 import Navbar from './components/Navbar';
 import Login from './components/Login';
 import InterviewAnalysis from './components/InterviewAnalysis';
+import ApplicationTracker from './components/ApplicationTracker';
 
 
 function App() {
@@ -21,6 +22,7 @@ function App() {
             <Route path="/login" element={<Login />} />
 
             <Route path="/interview-analysis" element={<InterviewAnalysis />} />
+            <Route path="/application-tracker" element={<ApplicationTracker />} />
           </Routes>
         </main>
         <footer className="footer">

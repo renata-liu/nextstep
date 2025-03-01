@@ -1,5 +1,4 @@
-
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './MockInterview.css';
 
@@ -10,9 +9,12 @@ const MockInterview = () => {
   const [hasStarted, setHasStarted] = useState(false);
   const [isStopped, setIsStopped] = useState(false);
   const videoRef = useRef(null);
+  const mediaRecorderRef = useRef(null);
   const [currentQuestion, setCurrentQuestion] = useState('');
   const [questionCount, setQuestionCount] = useState(1);
   const [isSessionComplete, setIsSessionComplete] = useState(false);
+  const [recordingIds, setRecordingIds] = useState([]);
+  const chunksRef = useRef([]);
 
   // Scroll to top when component mounts
   useEffect(() => {
@@ -29,15 +31,19 @@ const MockInterview = () => {
   ];
 
   useEffect(() => {
+    // Start camera when component mounts
     startCamera();
     // Set initial question without incrementing counter
     const randomIndex = Math.floor(Math.random() * sampleQuestions.length);
     setCurrentQuestion(sampleQuestions[randomIndex]);
     
     return () => {
-      // Cleanup: stop camera when component unmounts
+      // Cleanup: stop camera and recording when component unmounts
       if (videoRef.current && videoRef.current.srcObject) {
         videoRef.current.srcObject.getTracks().forEach(track => track.stop());
+      }
+      if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
+        mediaRecorderRef.current.stop();
       }
     };
   }, []);
@@ -52,18 +58,78 @@ const MockInterview = () => {
     return () => clearInterval(interval);
   }, [isRunning, time]);
 
+  //TODO: update endpoints   
+  const sendVideoToBackend = async (videoBlob, questionNumber, questionText) => {
+    try {
+      const formData = new FormData();
+      formData.append('video', videoBlob, `question_${questionNumber}.webm`);
+      formData.append('questionNumber', questionNumber);
+      formData.append('question', questionText);
+
+      const response = await fetch('/api/interview/upload-recording', {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to upload video');
+      }
+
+      const data = await response.json();
+      return data.recordingId; // Assuming backend returns an ID for the recording
+    } catch (error) {
+      console.error('Error uploading video:', error);
+      // You might want to show an error message to the user here
+      return null;
+    }
+  };
+
   const startCamera = async () => {
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+      const stream = await navigator.mediaDevices.getUserMedia({ 
+        video: true,
+        audio: true
+      });
       if (videoRef.current) {
         videoRef.current.srcObject = stream;
+        mediaRecorderRef.current = new MediaRecorder(stream);
+        
+        mediaRecorderRef.current.ondataavailable = (event) => {
+          if (event.data.size > 0) {
+            chunksRef.current.push(event.data);
+          }
+        };
+
+        mediaRecorderRef.current.onstop = async () => {
+          const blob = new Blob(chunksRef.current, { type: 'video/webm' });
+          // Send the video to backend immediately
+          const recordingId = await sendVideoToBackend(blob, questionCount, currentQuestion);
+          if (recordingId) {
+            setRecordingIds(prev => [...prev, recordingId]);
+          }
+          chunksRef.current = [];
+        };
       }
     } catch (err) {
       console.error("Error accessing camera:", err);
     }
   };
 
+  const startRecording = () => {
+    if (mediaRecorderRef.current && mediaRecorderRef.current.state === 'inactive') {
+      mediaRecorderRef.current.start();
+    }
+  };
+
+  const stopRecording = () => {
+    if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
+      mediaRecorderRef.current.stop();
+    }
+  };
+
   const generateNewQuestion = () => {
+    stopRecording();
+
     if (questionCount >= 5) {
       setIsSessionComplete(true);
       setIsRunning(false);
@@ -73,7 +139,6 @@ const MockInterview = () => {
     const randomIndex = Math.floor(Math.random() * sampleQuestions.length);
     setCurrentQuestion(sampleQuestions[randomIndex]);
     setQuestionCount(prevCount => prevCount + 1);
-    // Reset timer and states for new question
     setTime(120);
     setIsRunning(false);
     setHasStarted(false);
@@ -85,10 +150,38 @@ const MockInterview = () => {
       // First time starting
       setHasStarted(true);
       setIsRunning(true);
+      startRecording();
     } else {
       // Stopping the timer
       setIsRunning(false);
       setIsStopped(true);
+      stopRecording();
+    }
+  };
+
+//TODO: update endpoints?
+  const viewAnalysis = async () => {
+    try {
+      // Send the session completion signal to backend with all recording IDs
+      const response = await fetch('/api/interview/complete-session', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          recordingIds,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to complete session');
+      }
+
+      // Navigate to analysis page
+      navigate('/interview-analysis');
+    } catch (error) {
+      console.error('Error completing session:', error);
+      // You might want to show an error message to the user here
     }
   };
 
@@ -99,10 +192,6 @@ const MockInterview = () => {
   };
 
   const isLastQuestion = questionCount === 5;
-
-  const viewAnalysis = () => {
-    navigate('/interview-analysis');
-  };
 
   return (
     <div className="mock-interview-container">
@@ -122,7 +211,7 @@ const MockInterview = () => {
             {!isSessionComplete && (
               <div className="question-container">
                 <h2>Interview Question:</h2>
-                <p className="question-text">{currentQuestion}</p>
+                <span className="question-text">{currentQuestion}</span>
               </div>
             )}
           </div>

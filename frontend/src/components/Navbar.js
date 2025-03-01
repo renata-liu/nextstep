@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import './Navbar.css';
+import '../App.css';
 
 const Navbar = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -10,38 +10,30 @@ const Navbar = () => {
     setIsMobileMenuOpen(!isMobileMenuOpen);
   };
 
+  const handleLogin = () => {
+    navigate('/login');
+    setIsMobileMenuOpen(false);
+  };
+
   return (
     <nav className="navbar">
-      <Link to="/" className="navbar-logo">NextStep</Link>
+      <Link to="/" className="logo">NextStep</Link>
       <div className="nav-links">
-        <Link to="/mock-interview" className="nav-link">Mock Interview</Link>
-        <Link to="#application-tracker" className="nav-link">Application Tracker</Link>
-        <Link to="#about" className="nav-link">About</Link>
-        <button
-          className="nav-button"
-          onClick={() => navigate('/login')}
-        >
-          Login
-        </button>
+        <Link to="/mock-interview">Mock Interview</Link>
+        <Link to="/application-tracker">Application Tracker</Link>
+        <a href="#about">About</a>
+        <button className="login-btn" onClick={handleLogin}>Login</button>
       </div>
-      <div className="mobile-menu-button" onClick={toggleMobileMenu}>
+      <div className="kebab-menu" onClick={toggleMobileMenu}>
         <div></div>
         <div></div>
         <div></div>
       </div>
       <div className={`mobile-nav ${isMobileMenuOpen ? 'active' : ''}`}>
-        <Link to="/mock-interview" className="mobile-nav-link" onClick={() => setIsMobileMenuOpen(false)}>Mock Interview</Link>
-        <Link to="#application-tracker" className="mobile-nav-link" onClick={() => setIsMobileMenuOpen(false)}>Application Tracker</Link>
-        <Link to="#about" className="mobile-nav-link" onClick={() => setIsMobileMenuOpen(false)}>About</Link>
-        <button
-          className="nav-button mobile-nav-button"
-          onClick={() => {
-            navigate('/login');
-            setIsMobileMenuOpen(false);
-          }}
-        >
-          Login
-        </button>
+        <Link to="/mock-interview" onClick={() => setIsMobileMenuOpen(false)}>Mock Interview</Link>
+        <Link to="/application-tracker" onClick={() => setIsMobileMenuOpen(false)}>Application Tracker</Link>
+        <a href="#about" onClick={() => setIsMobileMenuOpen(false)}>About</a>
+        <button className="login-btn" onClick={handleLogin}>Login</button>
       </div>
     </nav>
   );
