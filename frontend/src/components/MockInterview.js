@@ -6,13 +6,13 @@ import './MockInterview.css';
 
 const MockInterview = () => {
   const navigate = useNavigate();
-  const [time, setTime] = useState(120); // 2 minutes in seconds
+  const [time, setTime] = useState(120);
   const [isRunning, setIsRunning] = useState(false);
   const [hasStarted, setHasStarted] = useState(false);
   const [isStopped, setIsStopped] = useState(false);
   const videoRef = useRef(null);
   const [currentQuestion, setCurrentQuestion] = useState('');
-  const [questionCount, setQuestionCount] = useState(1); // Start at 1 instead of 0
+  const [questionCount, setQuestionCount] = useState(1);
   const [isSessionComplete, setIsSessionComplete] = useState(false);
   const [stream, setStream] = useState(null);
 
@@ -56,7 +56,6 @@ const MockInterview = () => {
   }, [stream]);
 
   useEffect(() => {
-    // Start camera when component mounts
     startCamera();
     // Set initial question without incrementing counter
     const randomIndex = Math.floor(Math.random() * sampleQuestions.length);
@@ -110,17 +109,6 @@ const MockInterview = () => {
     setIsStopped(false);
   };
 
-  const startNewSession = () => {
-    setQuestionCount(1);
-    setIsSessionComplete(false);
-    setTime(120);
-    setIsRunning(false);
-    setHasStarted(false);
-    setIsStopped(false);
-    const randomIndex = Math.floor(Math.random() * sampleQuestions.length);
-    setCurrentQuestion(sampleQuestions[randomIndex]);
-  };
-
   const toggleTimer = () => {
     if (!hasStarted) {
       // First time starting
@@ -139,7 +127,7 @@ const MockInterview = () => {
     return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
   };
 
-  const isLastQuestion = questionCount === 5; // Check for 5 instead of 4
+  const isLastQuestion = questionCount === 5;
 
   const viewAnalysis = () => {
     navigate('/interview-analysis');
