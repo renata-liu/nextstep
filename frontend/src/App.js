@@ -8,6 +8,9 @@ import Login from './components/Login';
 import Dashboard from './components/Dashboard';
 import ProtectedRoute from './components/ProtectedRoute';
 
+import InterviewAnalysis from './components/InterviewAnalysis';
+
+
 function App() {
   return (
     <Router>
@@ -16,6 +19,7 @@ function App() {
         <main className="main-content">
           <Routes>
             <Route path="/" element={<HomePage />} />
+
             <Route path="/mock-interview" element={
               <ProtectedRoute>
                 <MockInterview />
@@ -27,6 +31,8 @@ function App() {
                 <Dashboard />
               </ProtectedRoute>
             } />
+
+            <Route path="/interview-analysis" element={<InterviewAnalysis />} />
           </Routes>
         </main>
         <footer className="footer">

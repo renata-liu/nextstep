@@ -1,13 +1,26 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import './HomePage.css';
 
 const HomePage = () => {
+  const navigate = useNavigate();
+
+  const scrollToFeatures = () => {
+    const featuresSection = document.getElementById('features');
+    featuresSection.scrollIntoView({ behavior: 'smooth' });
+  };
+
+  const goToMockInterview = () => {
+    navigate('/mock-interview');
+  };
+
   return (
     <>
       <section className="hero-section">
-        <h1>Your next job, one step away</h1>
+        <h1>NextStep</h1>
+        <h2>Your next job, one step away</h2>
         <p className="subtitle">Streamline your job search with smart interview preparation and application tracking</p>
-        <button className="hero-btn">Get Started</button>
+        <button className="hero-btn" onClick={scrollToFeatures}>Get Started</button>
       </section>
 
       <section className="features-section" id="features">
@@ -19,7 +32,7 @@ const HomePage = () => {
             <li>Real-time feedback</li>
             <li>Industry-specific scenarios</li>
           </ul>
-          <button className="feature-btn">Start Practice</button>
+          <button className="feature-btn" onClick={goToMockInterview}>Start Practice</button>
         </div>
 
         <div className="feature-card application-tracker">
