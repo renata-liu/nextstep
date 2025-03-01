@@ -1,7 +1,6 @@
 
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-
 import './MockInterview.css';
 
 const MockInterview = () => {
@@ -14,7 +13,6 @@ const MockInterview = () => {
   const [currentQuestion, setCurrentQuestion] = useState('');
   const [questionCount, setQuestionCount] = useState(1);
   const [isSessionComplete, setIsSessionComplete] = useState(false);
-  const [stream, setStream] = useState(null);
 
   // Scroll to top when component mounts
   useEffect(() => {
@@ -30,31 +28,6 @@ const MockInterview = () => {
     "Describe a challenging situation at work and how you handled it."
   ];
 
-  const stopCamera = useCallback(() => {
-    console.log('Stopping camera...');
-
-    if (stream) {
-      console.log('Stopping stream tracks...');
-      stream.getTracks().forEach(track => {
-        console.log('Track before stop:', track.enabled, track.readyState);
-        track.stop();
-        track.enabled = false;
-        console.log('Track after stop:', track.enabled, track.readyState);
-      });
-      setStream(null);
-    }
-
-    if (videoRef.current && videoRef.current.srcObject) {
-      console.log('Stopping video element tracks...');
-      const tracks = videoRef.current.srcObject.getTracks();
-      tracks.forEach(track => {
-        track.stop();
-        track.enabled = false;
-      });
-      videoRef.current.srcObject = null;
-    }
-  }, [stream]);
-
   useEffect(() => {
     startCamera();
     // Set initial question without incrementing counter
@@ -63,7 +36,9 @@ const MockInterview = () => {
     
     return () => {
       // Cleanup: stop camera when component unmounts
-      stopCamera();
+      if (videoRef.current && videoRef.current.srcObject) {
+        videoRef.current.srcObject.getTracks().forEach(track => track.stop());
+      }
     };
   }, []);
 
@@ -79,16 +54,12 @@ const MockInterview = () => {
 
   const startCamera = async () => {
     try {
-      // Stop any existing streams first
-      stopCamera();
-
-      const mediaStream = await navigator.mediaDevices.getUserMedia({ video: true });
+      const stream = await navigator.mediaDevices.getUserMedia({ video: true });
       if (videoRef.current) {
-        videoRef.current.srcObject = mediaStream;
+        videoRef.current.srcObject = stream;
       }
-      setStream(mediaStream);
-    } catch (error) {
-      console.error('Error accessing camera:', error);
+    } catch (err) {
+      console.error("Error accessing camera:", err);
     }
   };
 
