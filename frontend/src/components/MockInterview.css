@@ -2,6 +2,7 @@
   max-width: 1200px;
   margin: 0 auto;
   padding: 2rem;
+  margin-top: 6rem;
 }
 
 .interview-header {
@@ -81,17 +82,19 @@
   color: white;
 }
 
-.timer-button.pause {
-  background-color: var(--accent-color);
+.timer-button.stop {
+  background-color: #dc2626;
   color: white;
 }
 
-.timer-button.reset {
-  background-color: var(--light-bg);
-  color: var(--text-color);
+.timer-button:disabled {
+  background-color: #6b7280;
+  cursor: not-allowed;
+  opacity: 0.8;
+  transform: none;
 }
 
-.timer-button:hover {
+.timer-button:not(:disabled):hover {
   transform: translateY(-2px);
 }
 
@@ -99,6 +102,7 @@
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
+  text-align: center;
 }
 
 .question-card {
@@ -133,7 +137,14 @@
   width: 100%;
 }
 
-.next-question-button:hover {
+.next-question-button:disabled {
+  background-color: #a0a0a0;
+  cursor: not-allowed;
+  transform: none;
+  opacity: 0.7;
+}
+
+.next-question-button:not(:disabled):hover {
   background-color: var(--secondary-color);
   transform: translateY(-2px);
 }

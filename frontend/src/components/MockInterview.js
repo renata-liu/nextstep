@@ -4,6 +4,8 @@ import './MockInterview.css';
 const MockInterview = () => {
   const [time, setTime] = useState(120); // 2 minutes in seconds
   const [isRunning, setIsRunning] = useState(false);
+  const [hasStarted, setHasStarted] = useState(false);
+  const [isStopped, setIsStopped] = useState(false);
   const videoRef = useRef(null);
   const [currentQuestion, setCurrentQuestion] = useState('');
   const [questionCount, setQuestionCount] = useState(1); // Start at 1 instead of 0
@@ -55,35 +57,43 @@ const MockInterview = () => {
   };
 
   const generateNewQuestion = () => {
-    if (questionCount >= 5) { // Check for 5 instead of 4
+    if (questionCount >= 5) {
       setIsSessionComplete(true);
+      setIsRunning(false);
+      setIsStopped(true);
       return;
     }
     const randomIndex = Math.floor(Math.random() * sampleQuestions.length);
     setCurrentQuestion(sampleQuestions[randomIndex]);
     setQuestionCount(prevCount => prevCount + 1);
-    // Reset timer for new question
+    // Reset timer and states for new question
     setTime(120);
     setIsRunning(false);
+    setHasStarted(false);
+    setIsStopped(false);
   };
 
   const startNewSession = () => {
-    setQuestionCount(1); // Reset to 1 instead of 0
+    setQuestionCount(1);
     setIsSessionComplete(false);
     setTime(120);
     setIsRunning(false);
-    // Set initial question without incrementing counter
+    setHasStarted(false);
+    setIsStopped(false);
     const randomIndex = Math.floor(Math.random() * sampleQuestions.length);
     setCurrentQuestion(sampleQuestions[randomIndex]);
   };
 
   const toggleTimer = () => {
-    setIsRunning(!isRunning);
-  };
-
-  const resetTimer = () => {
-    setTime(120); // Reset to 2 minutes
-    setIsRunning(false);
+    if (!hasStarted) {
+      // First time starting
+      setHasStarted(true);
+      setIsRunning(true);
+    } else {
+      // Stopping the timer
+      setIsRunning(false);
+      setIsStopped(true);
+    }
   };
 
   const formatTime = (seconds) => {
@@ -119,16 +129,11 @@ const MockInterview = () => {
             <div className="timer-display">{formatTime(time)}</div>
             <div className="timer-controls">
               <button 
-                className={`timer-button ${isRunning ? 'pause' : 'start'}`}
+                className={`timer-button ${isRunning ? 'stop' : 'start'}`}
                 onClick={toggleTimer}
+                disabled={isStopped}
               >
-                {isRunning ? 'Pause' : 'Start'}
-              </button>
-              <button 
-                className="timer-button reset"
-                onClick={resetTimer}
-              >
-                Reset
+                {isStopped ? 'Stopped' : isRunning ? 'Stop' : 'Start'}
               </button>
             </div>
           </div>
@@ -136,8 +141,6 @@ const MockInterview = () => {
 
         <div className="question-section">
           <div className="question-card">
-            <h2>Interview Question:</h2>
-            <p className="question-text">{currentQuestion}</p>
             {isSessionComplete ? (
               <div className="session-complete">
                 <p className="completion-message">Practice session complete! 🎉</p>
@@ -149,12 +152,17 @@ const MockInterview = () => {
                 </button>
               </div>
             ) : (
-              <button 
-                className="next-question-button"
-                onClick={generateNewQuestion}
-              >
-                {isLastQuestion ? 'Complete Session' : 'Next Question'}
-              </button>
+              <>
+                <h2>Interview Question:</h2>
+                <p className="question-text">{currentQuestion}</p>
+                <button 
+                  className="next-question-button"
+                  onClick={generateNewQuestion}
+                  disabled={!hasStarted}
+                >
+                  {isLastQuestion ? 'Complete Session' : 'Next Question'}
+                </button>
+              </>
             )}
           </div>
           <div className="tips-card">
