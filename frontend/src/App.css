@@ -9,6 +9,18 @@
   --gradient-end: #06B6D4;
 }
 
+.main-content {
+  padding-top: 80px;
+  /* Account for fixed navbar */
+  min-height: calc(100vh - 60px);
+}
+
+.footer {
+  padding: 1rem;
+  text-align: center;
+  background-color: #f8f9fa;
+  color: #666;
+}
 .navbar {
   display: flex;
   justify-content: space-between;
@@ -17,7 +29,7 @@
   background-color: var(--white);
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   position: fixed;
-  width: 90%;
+  width: 100%;
   top: 0;
   z-index: 1000;
 }
@@ -62,14 +74,6 @@
 .login-btn:hover {
   background-color: var(--secondary-color);
   transform: translateY(-2px);
-}
-
-.footer {
-  background-color: var(--text-color);
-  color: var(--white);
-  text-align: center;
-  padding: 2rem 5%;
-  margin-top: 2rem;
 }
 
 .kebab-menu {
