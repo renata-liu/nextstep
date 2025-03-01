@@ -3,6 +3,8 @@ const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
 const morgan = require('morgan');
+const { errorHandler } = require('./middleware/error');
+const { apiLimiter, authLimiter } = require('./middleware/rateLimiter');
 
 // Import routes
 const userRouter = require('./controllers/user');
@@ -15,7 +17,7 @@ const app = express();
 // CORS Configuration
 const corsOptions = {
     origin: [
-        'http://localhost:3000',    // Local frontend
+        'http://localhost:3001',    // Local frontend
         'http://localhost:5173',    // Vite default port if you're using it
         'https://nextstep-eta.vercel.app/', // Add your deployed frontend URL
     ],
@@ -31,6 +33,10 @@ app.use(cors(corsOptions));
 // Other middleware
 app.use(express.json());
 app.use(morgan('tiny'));
+
+// Apply rate limiting
+app.use('/api/', apiLimiter);
+app.use('/api/auth/', authLimiter);
 
 // MongoDB connection
 mongoose.set('strictQuery', false);
@@ -56,10 +62,7 @@ app.get('/api/health', (req, res) => {
     res.json({ status: 'ok', message: 'Server is running' });
 });
 
-// Error handling middleware
-app.use((err, req, res, next) => {
-    console.error(err.stack);
-    res.status(500).json({ error: 'Something went wrong!' });
-});
+// Error handling middleware (should be last)
+app.use(errorHandler);
 
 module.exports = app;
