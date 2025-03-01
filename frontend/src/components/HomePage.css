@@ -28,7 +28,7 @@
     padding: 2rem;
     background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end));
     color: white;
-    padding-bottom: 6rem
+    padding-bottom: 3rem
   }
   
   .hero-section::before {
