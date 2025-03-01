@@ -1,7 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import './MockInterview.css';
 
 const MockInterview = () => {
+  const navigate = useNavigate();
   const [time, setTime] = useState(120); // 2 minutes in seconds
   const [isRunning, setIsRunning] = useState(false);
   const [hasStarted, setHasStarted] = useState(false);
@@ -10,6 +12,11 @@ const MockInterview = () => {
   const [currentQuestion, setCurrentQuestion] = useState('');
   const [questionCount, setQuestionCount] = useState(1); // Start at 1 instead of 0
   const [isSessionComplete, setIsSessionComplete] = useState(false);
+
+  // Scroll to top when component mounts
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
 
   // Sample questions - in a real app, these would come from an API or database
   const sampleQuestions = [
@@ -104,6 +111,10 @@ const MockInterview = () => {
 
   const isLastQuestion = questionCount === 5; // Check for 5 instead of 4
 
+  const viewAnalysis = () => {
+    navigate('/interview-analysis');
+  };
+
   return (
     <div className="mock-interview-container">
       <h1>Mock Interview Practice</h1>
@@ -159,9 +170,9 @@ const MockInterview = () => {
               <p className="completion-message">Practice session complete! 🎉</p>
               <button 
                 className="new-session-button"
-                onClick={startNewSession}
+                onClick={viewAnalysis}
               >
-                Start New Session
+                View Analysis
               </button>
             </div>
           )}
