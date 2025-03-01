@@ -106,65 +106,65 @@ const MockInterview = () => {
 
   return (
     <div className="mock-interview-container">
-      <div className="interview-header">
-        <h1>Mock Interview Practice</h1>
-        <p>Practice your interview skills with real-time feedback</p>
-        <div className="question-counter">
-          Question {questionCount} of 5
-        </div>
-      </div>
-
+      <h1>Mock Interview Practice</h1>
       <div className="interview-main">
-        <div className="video-section">
-          <div className="camera-container">
-            <video 
-              ref={videoRef} 
-              autoPlay 
-              playsInline 
-              muted 
-              className="camera-feed"
-            />
-          </div>
-          <div className="timer-container">
-            <div className="timer-display">{formatTime(time)}</div>
-            <div className="timer-controls">
-              <button 
-                className={`timer-button ${isRunning ? 'stop' : 'start'}`}
-                onClick={toggleTimer}
-                disabled={isStopped}
-              >
-                {isStopped ? 'Stopped' : isRunning ? 'Stop' : 'Start'}
-              </button>
+        <div className="content-section">
+          <div className="video-section">
+            <div className="camera-container">
+              <video 
+                ref={videoRef} 
+                autoPlay 
+                playsInline 
+                muted 
+                className="camera-feed"
+              />
             </div>
-          </div>
-        </div>
-
-        <div className="question-section">
-          <div className="question-card">
-            {isSessionComplete ? (
-              <div className="session-complete">
-                <p className="completion-message">Practice session complete! 🎉</p>
-                <button 
-                  className="new-session-button"
-                  onClick={startNewSession}
-                >
-                  Start New Session
-                </button>
-              </div>
-            ) : (
-              <>
+            {!isSessionComplete && (
+              <div className="question-container">
                 <h2>Interview Question:</h2>
                 <p className="question-text">{currentQuestion}</p>
-                <button 
-                  className="next-question-button"
-                  onClick={generateNewQuestion}
-                  disabled={!hasStarted}
-                >
-                  {isLastQuestion ? 'Complete Session' : 'Next Question'}
-                </button>
-              </>
+              </div>
             )}
           </div>
+        </div>
+
+        <div className="controls-section">
+          <div className="question-counter">
+            Question {questionCount} of 5
+          </div>
+          {!isSessionComplete ? (
+            <>
+              <div className="timer-container">
+                <div className="timer-display">{formatTime(time)}</div>
+                <div className="timer-controls">
+                  <button 
+                    className={`timer-button ${isRunning ? 'stop' : 'start'}`}
+                    onClick={toggleTimer}
+                    disabled={isStopped}
+                  >
+                    {isStopped ? 'Stopped' : isRunning ? 'Stop' : 'Start'}
+                  </button>
+                </div>
+              </div>
+              <button 
+                className="next-question-button"
+                onClick={generateNewQuestion}
+                disabled={!hasStarted}
+              >
+                {isLastQuestion ? 'Complete Session' : 'Next Question'}
+              </button>
+            </>
+          ) : (
+            <div className="session-complete">
+              <p className="completion-message">Practice session complete! 🎉</p>
+              <button 
+                className="new-session-button"
+                onClick={startNewSession}
+              >
+                Start New Session
+              </button>
+            </div>
+          )}
           <div className="tips-card">
             <h3>Tips for this question:</h3>
             <ul>
