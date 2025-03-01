@@ -1,53 +1,80 @@
 const express = require('express');
 const router = express.Router();
 const { MockInterview } = require('../models');
+const { auth } = require('../middleware/auth');
 
-// Test endpoint - Get all interviews
-router.get('/test', async (req, res) => {
+// Get all interviews for the authenticated user
+router.get('/', auth, async (req, res) => {
     try {
-        const interviews = await MockInterview.find({})
-            .limit(5)
-            .populate('userId', 'email name')
-            .populate('jobApplicationId');
-        res.json({
-            message: 'Mock Interview controller is connected',
-            interviewCount: interviews.length,
-            interviews
-        });
+        const interviews = await MockInterview.find({ userId: req.user._id })
+            .populate('jobApplicationId', 'company position');
+        res.json(interviews);
     } catch (error) {
-        res.status(500).json({ error: error.message });
+        res.status(500).json({ message: error.message });
     }
 });
 
-// Test endpoint - Create a test interview
-router.post('/test', async (req, res) => {
+// Get a specific interview
+router.get('/:id', auth, async (req, res) => {
     try {
-        const testInterview = new MockInterview({
-            userId: '65f123456789abcdef123456', // You'll need to replace this with a real user ID
-            questions: [{
-                question: 'Test question?',
-                videoUrl: 'http://example.com/video',
-                analysis: {
-                    score: 8,
-                    strengths: ['Good communication'],
-                    weaknesses: ['Could improve eye contact'],
-                    suggestions: ['Practice more']
-                }
-            }],
-            overallAnalysis: {
-                score: 8,
-                summary: 'Good performance overall',
-                keyInsights: ['Strong technical knowledge'],
-                improvementAreas: ['Body language']
-            }
-        });
-        const savedInterview = await testInterview.save();
-        res.json({
-            message: 'Test interview created successfully',
-            interview: savedInterview
-        });
+        const interview = await MockInterview.findOne({
+            _id: req.params.id,
+            userId: req.user._id
+        }).populate('jobApplicationId', 'company position');
+        if (!interview) {
+            return res.status(404).json({ message: 'Interview not found' });
+        }
+        res.json(interview);
     } catch (error) {
-        res.status(500).json({ error: error.message });
+        res.status(500).json({ message: error.message });
+    }
+});
+
+// Create a new interview
+router.post('/', auth, async (req, res) => {
+    try {
+        const interview = new MockInterview({
+            ...req.body,
+            userId: req.user._id,
+            date: new Date()
+        });
+        const savedInterview = await interview.save();
+        res.status(201).json(savedInterview);
+    } catch (error) {
+        res.status(400).json({ message: error.message });
+    }
+});
+
+// Update an interview
+router.put('/:id', auth, async (req, res) => {
+    try {
+        const interview = await MockInterview.findOneAndUpdate(
+            { _id: req.params.id, userId: req.user._id },
+            req.body,
+            { new: true, runValidators: true }
+        );
+        if (!interview) {
+            return res.status(404).json({ message: 'Interview not found' });
+        }
+        res.json(interview);
+    } catch (error) {
+        res.status(400).json({ message: error.message });
+    }
+});
+
+// Delete an interview
+router.delete('/:id', auth, async (req, res) => {
+    try {
+        const interview = await MockInterview.findOneAndDelete({
+            _id: req.params.id,
+            userId: req.user._id
+        });
+        if (!interview) {
+            return res.status(404).json({ message: 'Interview not found' });
+        }
+        res.json({ message: 'Interview deleted' });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
     }
 });
 

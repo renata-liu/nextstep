@@ -22,8 +22,8 @@ const Login = () => {
             } else {
                 await signup(email, password);
             }
-            // Redirect to home page after successful login/signup
-            navigate('/');
+            // Changed from '/' to '/dashboard'
+            navigate('/dashboard');
         } catch (err) {
             setError(err.message || 'An error occurred. Please try again.');
         } finally {
