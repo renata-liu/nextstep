@@ -109,7 +109,7 @@ const MockInterview = () => {
     return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
   };
 
-  const isLastQuestion = questionCount === 5; // Check for 5 instead of 4
+  const isLastQuestion = questionCount === 5;
 
   const viewAnalysis = () => {
     navigate('/interview-analysis');
