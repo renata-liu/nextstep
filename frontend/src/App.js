@@ -5,7 +5,7 @@ function App() {
   return (
     <div className="App">
       <nav className="navbar">
-        <div className="logo">JobPrep Pro</div>
+        <div className="logo">NextStep</div>
         <div className="nav-links">
           <a href="#features">Features</a>
           <a href="#about">About</a>
@@ -15,8 +15,8 @@ function App() {
 
       <main className="main-content">
         <section className="hero-section">
-          <h1>Master Your Job Search Journey</h1>
-          <p className="subtitle">Your all-in-one platform for interview preparation and application tracking</p>
+          <h1>Your Next Job, One Step Away</h1>
+          <p className="subtitle">Streamline your job search with smart interview preparation and application tracking</p>
         </section>
 
         <section className="features-section" id="features">
@@ -44,13 +44,13 @@ function App() {
         </section>
 
         <section className="cta-section">
-          <h2>Ready to Level Up Your Job Search?</h2>
+          <h2>Take Your First Step Today</h2>
           <button className="cta-btn">Get Started</button>
         </section>
       </main>
 
       <footer className="footer">
-        <p>&copy; 2024 JobPrep Pro. All rights reserved.</p>
+        <p>&copy; 2024 NextStep. All rights reserved.</p>
       </footer>
     </div>
   );
