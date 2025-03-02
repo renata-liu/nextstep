@@ -1,48 +1,50 @@
 const mongoose = require('mongoose');
-const { Schema } = mongoose;
 
-const jobApplicationSchema = new Schema({
+const deadlineSchema = new mongoose.Schema({
+    title: {
+        type: String,
+        required: true
+    },
+    date: {
+        type: Date,
+        required: true
+    }
+});
+
+const jobApplicationSchema = new mongoose.Schema({
     userId: {
-        type: Schema.Types.ObjectId,
+        type: mongoose.Schema.Types.ObjectId,
         ref: 'User',
         required: true
     },
     company: {
         type: String,
-        required: true
+        required: [true, 'Company name is required']
     },
     position: {
         type: String,
-        required: true
+        required: [true, 'Position is required']
     },
-    description: String,
     status: {
         type: String,
         enum: ['Wishlist', 'Applied', 'Interview', 'Offer', 'Rejected', 'Accepted'],
         default: 'Wishlist'
     },
-    salary: String,
-    location: String,
     remoteStatus: {
         type: String,
-        enum: ['Remote', 'Hybrid', 'On-site', 'Unknown'],
-        default: 'Unknown'
+        enum: ['Remote', 'Hybrid', 'On-site'],
+        default: 'On-site'
     },
+    location: String,
+    salary: Number,
     appliedDate: Date,
+    deadlines: [deadlineSchema],
     notes: String,
-    links: [{
-        title: String,
-        url: String
-    }],
-    deadlines: [{
-        title: String,
-        date: Date,
-        googleCalendarEventId: String
-    }],
-    createdAt: {
-        type: Date,
-        default: Date.now
-    }
+    url: String
+}, {
+    timestamps: true
 });
 
-module.exports = mongoose.model('JobApplication', jobApplicationSchema); 
+const JobApplication = mongoose.model('JobApplication', jobApplicationSchema);
+
+module.exports = JobApplication; 

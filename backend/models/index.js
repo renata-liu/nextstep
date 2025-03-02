@@ -1,6 +1,6 @@
-const User = require('./User');
-const JobApplication = require('./JobApplication');
-const MockInterview = require('./MockInterview');
+const User = require('./user');
+const JobApplication = require('./jobApplication');
+const MockInterview = require('./mockInterview');
 
 module.exports = {
     User,
