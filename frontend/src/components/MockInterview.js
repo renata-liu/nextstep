@@ -1,9 +1,8 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { uploadInterviewVideo } from '../services/videoService';
-import { getUser } from '../services/auth';
-import InterviewAnalysis from './InterviewAnalysis';
-import './MockInterview.css';
+import React, { useEffect, useRef, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { getUser } from "../services/auth";
+import { uploadInterviewVideo } from "../services/videoService";
+import "./MockInterview.css";
 
 const MockInterview = () => {
 	const navigate = useNavigate();
@@ -29,20 +28,117 @@ const MockInterview = () => {
 		window.scrollTo(0, 0);
 	}, []);
 
-	// Sample questions - in a real app, these would come from an API or database
-	const sampleQuestions = [
-		"Tell me about yourself and your experience.",
-		"What are your greatest strengths and weaknesses?",
-		"Why are you interested in this position?",
-		"Where do you see yourself in 5 years?",
-		"Describe a challenging situation at work and how you handled it.",
-	];
+	// -----
+	/**
+	 * Calls the Gumloop API to start a workflow
+	 * @returns {Promise<string>} - Returns the runId
+	 */
+	async function startRandomQuestionWorkflow() {
+		const options = {
+			method: "POST",
+			headers: {
+				Authorization: "Bearer cad77750358c4f4a86d789b41d7fae74",
+				"Content-Type": "application/json",
+			},
+			body: JSON.stringify({
+				user_id: "mIsmdAwErVeNYhMZzyRcKZIJj5z1", // Hardcoded user_id
+				saved_item_id: "8ZaoQgieP52jEuDU6f2PPh", // Static saved_item_id
+				pipeline_inputs: [], // No pipeline inputs passed
+			}),
+		};
+
+		try {
+			const response = await fetch(
+				"https://api.gumloop.com/api/v1/start_pipeline",
+				options
+			);
+
+			if (!response.ok) {
+				const errorData = await response.json().catch(() => null);
+				throw new Error(
+					`API request failed with status ${response.status}: ${
+						errorData ? JSON.stringify(errorData) : "Unknown error"
+					}`
+				);
+			}
+
+			const data = await response.json();
+			const runId = data.run_id; // Assuming `run_id` is part of the response
+
+			return runId; // Return just the run_id here
+		} catch (error) {
+			throw error;
+		}
+	}
+
+	/**
+	 * Retrieves the run details for a specific flow run
+	 * @param {string} runId - The ID of the flow run to retrieve
+	 * @returns {Promise<Object>} - Response containing run details
+	 */
+	async function getRandomQuestionRunDetails(runId) {
+		const options = {
+			method: "GET",
+			headers: {
+				Authorization: "Bearer cad77750358c4f4a86d789b41d7fae74", // Bearer token for authorization
+			},
+		};
+
+		try {
+			// Polling the run details
+			const response = await fetch(
+				`https://api.gumloop.com/api/v1/get_pl_run?run_id=${runId}&user_id=mIsmdAwErVeNYhMZzyRcKZIJj5z1`,
+				options
+			);
+
+			if (!response.ok) {
+				const errorData = await response.json().catch(() => null);
+				throw new Error(
+					`API request failed with status ${response.status}: ${
+						errorData ? JSON.stringify(errorData) : "Unknown error"
+					}`
+				);
+			}
+
+			const data = await response.json();
+
+			// Check if the flow is completed and if "question" output exists
+			if (data.state === "DONE") {
+				if (data.outputs && data.outputs["question"]) {
+					return data.outputs["question"]; // Return the value for "question"
+				} else {
+					throw new Error(
+						'Output "question" not found in the run details.'
+					);
+				}
+			} else {
+				// Handle other states like RUNNING, FAILED, etc.
+				return getRandomQuestionRunDetails(runId); // Optionally, handle this case by polling again
+			}
+		} catch (error) {
+			throw error;
+		}
+	}
+	// -----
 
 	useEffect(() => {
 		startCamera();
-		// Set initial question without incrementing counter
-		const randomIndex = Math.floor(Math.random() * sampleQuestions.length);
-		setCurrentQuestion(sampleQuestions[randomIndex]);
+		setCurrentQuestion(
+			startRandomQuestionWorkflow()
+				.then((runId) => {
+					// Immediately after startWorkflow finishes, call getRunDetails
+					return getRandomQuestionRunDetails(runId);
+				})
+				.then((questionOutput) => {
+					// Output the final result for "question"
+					if (questionOutput) {
+						return questionOutput;
+					}
+				})
+				.catch((err) => {
+					console.error("Error:", err);
+				})
+		);
 
 		return () => {
 			// Cleanup: stop camera when component unmounts
@@ -84,8 +180,23 @@ const MockInterview = () => {
 			setIsStopped(true);
 			return;
 		}
-		const randomIndex = Math.floor(Math.random() * sampleQuestions.length);
-		setCurrentQuestion(sampleQuestions[randomIndex]);
+
+		setCurrentQuestion(
+			startRandomQuestionWorkflow()
+				.then((runId) => {
+					// Immediately after startWorkflow finishes, call getRunDetails
+					return getRandomQuestionRunDetails(runId);
+				})
+				.then((questionOutput) => {
+					// Output the final result for "question"
+					if (questionOutput) {
+						return questionOutput;
+					}
+				})
+				.catch((err) => {
+					console.error("Error:", err);
+				})
+		);
 		setQuestionCount((prevCount) => prevCount + 1);
 		// Reset timer and states for new question
 		setTime(120);
@@ -112,14 +223,14 @@ const MockInterview = () => {
 			// 		}),
 			// 	}
 			// );
-
 			// if (!response.ok) {
 			// 	throw new Error("Failed to get feedback");
 			// }
-
 			// const data = await response.json();
 			// setFeedbackText(data.feedback);
-			setFeedbackText("This is a test feedback");
+			setFeedbackText(
+				"You Are Doing Great! This is just test feedback :)"
+			);
 		} catch (error) {
 			console.error("Error getting feedback:", error);
 			setRecordingError("Failed to get feedback. Please try again.");
