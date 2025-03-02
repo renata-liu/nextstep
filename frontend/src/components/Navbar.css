@@ -17,7 +17,7 @@
 @media (max-width: 768px) {
     .login-button {
         margin: 0.5rem 0;
-        width: 100%;
+        width: 90%;
     }
 }
 
@@ -74,6 +74,7 @@
     font-weight: 600;
     cursor: pointer;
     transition: all 0.3s ease;
+    margin-left: 1rem;
 }
 
 .nav-button:hover {
@@ -81,6 +82,16 @@
     transform: translateY(-2px);
 }
 
+.nav-button.logout {
+    background-color: transparent;
+    border: 2px solid var(--primary-color);
+    color: var(--primary-color);
+}
+
+.nav-button.logout:hover {
+    background-color: var(--primary-color);
+    color: var(--white);
+}
 .mobile-menu-button {
     display: none;
     flex-direction: column;
@@ -132,7 +143,8 @@
 
 .mobile-nav-button {
     width: 100%;
-    margin-top: 0.5rem;
+    margin: 0.5rem 0;
+        margin-left: 0;
 }
 
 @media (max-width: 768px) {
@@ -151,4 +163,9 @@
     .navbar {
         padding: 1rem 1.5rem;
     }
+.nav-button {
+    margin-left: 0;
+    width: 100%;
+    text-align: center;
+}
 }

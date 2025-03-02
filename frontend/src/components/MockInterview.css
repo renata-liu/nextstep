@@ -386,12 +386,3 @@
 		margin: 1rem;
 	}
 }
-
-.question-container.processing {
-	background-color: rgba(0, 0, 0, 0.05);
-}
-
-.processing-indicator {
-	color: #666;
-	font-style: italic;
-}
