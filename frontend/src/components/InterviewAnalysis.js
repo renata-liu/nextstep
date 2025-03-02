@@ -1,37 +1,28 @@
-import React from 'react';
+import React, { useEffect } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import './InterviewAnalysis.css';
 
-const InterviewAnalysis = ({ analysisData }) => {
-  // This is placeholder data - replace with actual data from backend
-  const mockAnalysis = {
-    overallScore: 85,
-    totalDuration: "15:30",
-    questions: [
-      {
-        id: 1,
-        question: "Tell me about yourself and your experience with React.",
-        duration: "1:34",
-        metrics: {
-          confidence: 82,
-          clarity: 88,
-          eyeContact: 75,
-          pacing: 85
-        },
-        strengths: [
-          "Strong opening statement",
-          "Clear project examples",
-          "Good technical depth"
-        ],
-        improvements: [
-          "Could maintain more consistent eye contact",
-          "Slight tendency to speak quickly when discussing technical details"
-        ],
-        keywordsCovered: ["React", "Components", "State Management", "APIs"],
-        transcription: "I have been working with React for the past three years..."
-      },
-      // Add more questions as needed
-    ]
-  };
+const InterviewAnalysis = () => {
+  const location = useLocation();
+  const navigate = useNavigate();
+  
+  // Try to get analysis data from navigation state or session storage
+  const analysisData = location.state?.analysisData || JSON.parse(sessionStorage.getItem('analysisData'));
+
+  useEffect(() => {
+    // If we have analysis data from navigation state, save it to session storage
+    if (location.state?.analysisData) {
+      sessionStorage.setItem('analysisData', JSON.stringify(location.state.analysisData));
+    }
+    // If we don't have analysis data at all, redirect to mock interview
+    else if (!analysisData) {
+      navigate('/mock-interview');
+    }
+  }, [location.state, analysisData, navigate]);
+
+  if (!analysisData) {
+    return null; // Return nothing while redirecting
+  }
 
   return (
     <div className="analysis-container">
@@ -39,18 +30,18 @@ const InterviewAnalysis = ({ analysisData }) => {
         <h1>Mock Interview Analysis</h1>
         <div className="overall-score">
           <div className="score-circle">
-            <span className="score-number">{mockAnalysis.overallScore}</span>
+            <span className="score-number">{analysisData.overallScore}</span>
             <span className="score-label">Overall Score</span>
           </div>
           <div className="total-time">
             <span className="time-label">Total Duration</span>
-            <span className="time-value">{mockAnalysis.totalDuration}</span>
+            <span className="time-value">{analysisData.totalDuration}</span>
           </div>
         </div>
       </header>
 
       <div className="questions-analysis">
-        {mockAnalysis.questions.map((q, index) => (
+        {analysisData.questions.map((q, index) => (
           <div key={q.id} className="question-analysis-card">
             <div className="question-header">
               <h2>Question {index + 1}</h2>

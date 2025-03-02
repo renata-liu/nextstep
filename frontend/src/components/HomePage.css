@@ -9,6 +9,30 @@
   --gradient-end: #06B6D4;
 }
 
+@keyframes gradient {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+@keyframes float {
+  0% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-20px);
+  }
+  100% {
+    transform: translateY(0px);
+  }
+}
+
 .App {
   text-align: left;
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
@@ -19,16 +43,19 @@
 }
 
 .hero-section {
-  min-height: 70vh;
+  min-height: 90vh;
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
   text-align: center;
-  padding: 2rem;
-  background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end));
+  padding: 4rem 2rem;
+  background: linear-gradient(-45deg, #4C1D95, #7C3AED, #38BDF8, #2E1065);
+  background-size: 300% 300%;
+  animation: gradient 10s ease infinite;
+  position: relative;
+  overflow: hidden;
   color: white;
-  padding-bottom: 3rem
 }
 
 .hero-section::before {
@@ -38,60 +65,71 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.15'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
-  background-size: 60px 60px;
-  opacity: 0.2;
-  z-index: 1;
+  background-image: url("data:image/svg+xml,%3Csvg width='80' height='80' viewBox='0 0 80 80' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.3'%3E%3Cpath d='M48 45.3v-5.3h-2.7v5.3h-5.3v2.7h5.3v5.3h2.7v-5.3h5.3v-2.7h-5.3zm0-40V0h-2.7v5.3h-5.3V8h5.3v5.3h2.7V8h5.3V5.3h-5.3zM8 45.3v-5.3H5.3v5.3H0v2.7h5.3v5.3H8v-5.3h5.3v-2.7H8zM8 5.3V0H5.3v5.3H0V8h5.3v5.3H8V8h5.3V5.3H8z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+  background-size: 80px 80px;
+  opacity: 0.4;
+  animation: float 8s ease-in-out infinite;
+  pointer-events: none;
 }
 
 .hero-section > * {
   position: relative;
   z-index: 2;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .hero-section h1 {
-  font-size: 3.5rem;
-  font-weight: 700;
+  font-size: 4.5rem;
+  font-weight: 800;
   margin-bottom: 1rem;
+  color: white;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  opacity: 1;
 }
 
 .hero-section h2 {
   font-size: 2.5rem;
-  font-weight: 600;
+  font-weight: 700;
   margin-bottom: 1.5rem;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
 .hero-section .subtitle {
   font-size: 1.25rem;
   max-width: 600px;
   margin: 0 auto 2rem;
-  opacity: 0.9;
   line-height: 1.6;
+  font-weight: 500;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
 }
 
 .hero-btn {
-  background-color: white;
+  background-color: rgba(255, 255, 255, 0.9);
   color: var(--primary-color);
-  padding: 1rem 2rem;
+  padding: 1.25rem 2.5rem;
   border: none;
-  border-radius: 0.5rem;
-  font-size: 1.125rem;
+  border-radius: 0.75rem;
+  font-size: 1.25rem;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.3s ease;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1), 0 1px 3px rgba(0, 0, 0, 0.08);
 }
 
 .hero-btn:hover {
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15), 0 2px 4px rgba(0, 0, 0, 0.12);
+  background-color: white;
 }
 
 .features-section {
   padding: 6rem 5%;
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  grid-auto-rows: 1fr;
   gap: 2rem;
   background-color: var(--light-bg);
+  align-items: start;
 }
 
 .feature-card {
@@ -101,6 +139,8 @@
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
   transition: all 0.3s ease;
   border: 1px solid rgba(0, 0, 0, 0.1);
+  height: 20rem;
+  flex: 1 1 300px;
 }
 
 .feature-card:hover {
@@ -189,6 +229,29 @@
 .cta-btn:hover {
   transform: translateY(-2px) scale(1.05);
   box-shadow: 0 6px 8px rgba(0, 0, 0, 0.2);
+}
+
+.interview-prep {
+  transform: translateY(35px);
+}
+.application-tracker h2 {
+  transform: translateY(-40px);
+}
+
+.application-tracker p {
+  transform: translateY(-40px);
+}
+
+.application-tracker ul {
+  transform: translateY(-45px);
+}
+
+.application-tracker button {
+  transform: translateY(-65px);
+}
+
+.application-tracker {
+  height: 46%;
 }
 
 .footer {

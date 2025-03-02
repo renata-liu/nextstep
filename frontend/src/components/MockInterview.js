@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
+import InterviewAnalysis from './InterviewAnalysis';
 import './MockInterview.css';
 
 const MockInterview = () => {
@@ -16,9 +17,18 @@ const MockInterview = () => {
   const [recordingIds, setRecordingIds] = useState([]);
   const chunksRef = useRef([]);
 
+  // Add analysis data state
+  const [analysisData, setAnalysisData] = useState({
+    overallScore: 85,
+    totalDuration: "10:00",
+    questions: []
+  });
+
   // Scroll to top when component mounts
   useEffect(() => {
     window.scrollTo(0, 0);
+    // Clear any previous analysis data when starting a new session
+    sessionStorage.removeItem('analysisData');
   }, []);
 
   // Sample questions - in a real app, these would come from an API or database
@@ -159,29 +169,45 @@ const MockInterview = () => {
     }
   };
 
-//TODO: update endpoints?
-  const viewAnalysis = async () => {
-    try {
-      // Send the session completion signal to backend with all recording IDs
-      const response = await fetch('/api/interview/complete-session', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          recordingIds,
-        }),
+  // Update analysis data when session completes
+  useEffect(() => {
+    if (isSessionComplete) {
+      setAnalysisData({
+        overallScore: 85,
+        totalDuration: formatTime(time * questionCount),
+        questions: Array.from({ length: questionCount }, (_, i) => ({
+          id: i + 1,
+          question: sampleQuestions[i % sampleQuestions.length],
+          duration: "2:00",
+          metrics: {
+            confidence: Math.floor(Math.random() * 20) + 80,
+            clarity: Math.floor(Math.random() * 20) + 80,
+            eyeContact: Math.floor(Math.random() * 20) + 80,
+            pacing: Math.floor(Math.random() * 20) + 80
+          },
+          strengths: [
+            "Clear and confident delivery",
+            "Good use of specific examples",
+            "Well-structured response"
+          ],
+          improvements: [
+            "Could provide more detailed examples",
+            "Consider speaking at a slightly slower pace"
+          ],
+          keywordsCovered: ["Communication", "Experience", "Skills", "Goals"],
+          transcription: "Sample transcription for the interview response..."
+        }))
       });
+    }
+  }, [isSessionComplete, questionCount, time, sampleQuestions]);
 
-      if (!response.ok) {
-        throw new Error('Failed to complete session');
-      }
-
-      // Navigate to analysis page
-      navigate('/interview-analysis');
+  const viewAnalysis = () => {
+    try {
+      navigate('/interview-analysis', { 
+        state: { analysisData }
+      });
     } catch (error) {
-      console.error('Error completing session:', error);
-      // You might want to show an error message to the user here
+      console.error('Error navigating to analysis:', error);
     }
   };
 
