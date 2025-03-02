@@ -17,9 +17,7 @@ function App() {
           <Routes>
             <Route path="/" element={<HomePage />} />
             <Route path="/mock-interview" element={<MockInterview />} />
-
             <Route path="/login" element={<Login />} />
-
             <Route path="/interview-analysis" element={<InterviewAnalysis />} />
           </Routes>
         </main>
