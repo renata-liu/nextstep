@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { uploadInterviewVideo } from '../services/videoService';
 import { getUser } from '../services/auth';
+import InterviewAnalysis from './InterviewAnalysis';
 import './MockInterview.css';
 
 const MockInterview = () => {
@@ -21,11 +22,6 @@ const MockInterview = () => {
   const chunksRef = useRef([]);
   const isAuthenticated = !!getUser();
 
-  // Scroll to top when component mounts
-  useEffect(() => {
-    window.scrollTo(0, 0);
-  }, []);
-
   // Sample questions - in a real app, these would come from an API or database
   const sampleQuestions = [
     "Tell me about yourself and your experience.",
@@ -34,6 +30,52 @@ const MockInterview = () => {
     "Where do you see yourself in 5 years?",
     "Describe a challenging situation at work and how you handled it."
   ];
+
+  // Analysis data state
+  const [analysisData, setAnalysisData] = useState({
+    overallScore: 85,
+    totalDuration: "10:00",
+    questions: []
+  });
+
+  // Update analysis data when session completes
+  useEffect(() => {
+    if (isSessionComplete) {
+      setAnalysisData({
+        overallScore: 85,
+        totalDuration: formatTime(time * questionCount),
+        questions: recordings.map(recording => ({
+          id: recording.questionNumber,
+          question: sampleQuestions[recording.questionNumber - 1],
+          duration: "2:00",
+          metrics: {
+            confidence: Math.floor(Math.random() * 20) + 80,
+            clarity: Math.floor(Math.random() * 20) + 80,
+            eyeContact: Math.floor(Math.random() * 20) + 80,
+            pacing: Math.floor(Math.random() * 20) + 80
+          },
+          strengths: [
+            "Clear and confident delivery",
+            "Good use of specific examples",
+            "Well-structured response"
+          ],
+          improvements: [
+            "Could provide more detailed examples",
+            "Consider speaking at a slightly slower pace"
+          ],
+          keywordsCovered: ["Experience", "Skills", "Projects", "Goals"],
+          transcription: isAuthenticated 
+            ? "Full transcription available for authenticated users..."
+            : "Sign up to access full transcription and save your progress!"
+        }))
+      });
+    }
+  }, [isSessionComplete, recordings, questionCount, time, sampleQuestions, isAuthenticated]);
+
+  // Scroll to top when component mounts
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
 
   useEffect(() => {
     startCamera();
@@ -180,33 +222,56 @@ const MockInterview = () => {
           {recordingError}
         </div>
       )}
-      <div className="interview-main">
-        <div className="content-section">
-          <div className="video-section">
-            <div className="camera-container">
-              <video 
-                ref={videoRef} 
-                autoPlay 
-                playsInline 
-                muted 
-                className="camera-feed"
-              />
+      
+      {isSessionComplete ? (
+        <>
+          <div className="session-complete">
+            <p className="completion-message">Practice session complete! 🎉</p>
+          </div>
+          <InterviewAnalysis analysisData={analysisData} />
+          {!isAuthenticated && (
+            <div className="login-prompt-container">
+              <p>Want more features? Create an account to:</p>
+              <ul>
+                <li>Save your recordings permanently</li>
+                <li>Access full interview transcriptions</li>
+                <li>Track your progress over time</li>
+                <li>Get personalized improvement recommendations</li>
+              </ul>
+              <button 
+                className="login-button"
+                onClick={() => navigate('/login')}
+              >
+                Sign Up Now
+              </button>
             </div>
-            {!isSessionComplete && (
-              <div className="question-container">
-                <h2>Interview Question:</h2>
-                <p className="question-text">{currentQuestion}</p>
+          )}
+        </>
+      ) : (
+        <>
+          <div className="interview-main">
+            <div className="content-section">
+              <div className="video-section">
+                <div className="camera-container">
+                  <video 
+                    ref={videoRef} 
+                    autoPlay 
+                    playsInline 
+                    muted 
+                    className="camera-feed"
+                  />
+                </div>
+                <div className="question-container">
+                  <h2>Interview Question:</h2>
+                  <p className="question-text">{currentQuestion}</p>
+                </div>
               </div>
-            )}
-          </div>
-        </div>
+            </div>
 
-        <div className="controls-section">
-          <div className="question-counter">
-            Question {questionCount} of 5
-          </div>
-          {!isSessionComplete ? (
-            <>
+            <div className="controls-section">
+              <div className="question-counter">
+                Question {questionCount} of 5
+              </div>
               <div className="timer-container">
                 <div className="timer-display">{formatTime(time)}</div>
                 <div className="timer-controls">
@@ -226,66 +291,40 @@ const MockInterview = () => {
               >
                 {isLastQuestion ? 'Complete Session' : 'Next Question'}
               </button>
-            </>
-          ) : (
-            <div className="session-complete">
-              <p className="completion-message">Practice session complete! 🎉</p>
-              {!isAuthenticated ? (
-                <div className="login-prompt-container">
-                  <p>Create an account to:</p>
-                  <ul>
-                    <li>Save your recordings permanently</li>
-                    <li>Get AI-powered feedback</li>
-                    <li>Track your progress</li>
-                  </ul>
-                  <button 
-                    className="login-button"
-                    onClick={() => navigate('/login')}
-                  >
-                    Sign Up Now
-                  </button>
-                </div>
-              ) : (
-                <button 
-                  className="new-session-button"
-                  onClick={viewAnalysis}
-                >
-                  View Analysis
-                </button>
-              )}
+              <div className="tips-card">
+                <h3>Tips for this question:</h3>
+                <ul>
+                  <li>Structure your answer using the STAR method</li>
+                  <li>Keep your response under 2 minutes</li>
+                  <li>Include specific examples from your experience</li>
+                  <li>Maintain good eye contact with the camera</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          {recordings.length > 0 && (
+            <div className="recordings-section">
+              <h2>Your Recordings</h2>
+              <div className="recordings-grid">
+                {recordings.map((recording, index) => (
+                  <div key={index} className="recording-card">
+                    <h3>Question {recording.questionNumber}</h3>
+                    <video controls src={recording.url} className="recording-playback" />
+                    <p className="recording-timestamp">
+                      Recorded at: {new Date(recording.timestamp).toLocaleTimeString()}
+                    </p>
+                    {!recording.isAuthenticated && (
+                      <p className="login-prompt">
+                        Sign up to save your recordings permanently
+                      </p>
+                    )}
+                  </div>
+                ))}
+              </div>
             </div>
           )}
-          <div className="tips-card">
-            <h3>Tips for this question:</h3>
-            <ul>
-              <li>Structure your answer using the STAR method</li>
-              <li>Keep your response under 2 minutes</li>
-              <li>Include specific examples from your experience</li>
-              <li>Maintain good eye contact with the camera</li>
-            </ul>
-          </div>
-        </div>
-      </div>
-      {!isSessionComplete && recordings.length > 0 && (
-        <div className="recordings-section">
-          <h2>Your Recordings</h2>
-          <div className="recordings-grid">
-            {recordings.map((recording, index) => (
-              <div key={index} className="recording-card">
-                <h3>Question {recording.questionNumber}</h3>
-                <video controls src={recording.url} className="recording-playback" />
-                <p className="recording-timestamp">
-                  Recorded at: {new Date(recording.timestamp).toLocaleTimeString()}
-                </p>
-                {!recording.isAuthenticated && (
-                  <p className="login-prompt">
-                    Log in to access additional features like AI feedback and progress tracking
-                  </p>
-                )}
-              </div>
-            ))}
-          </div>
-        </div>
+        </>
       )}
     </div>
   );
