@@ -9,6 +9,9 @@ const Dashboard = () => {
     const [loading, setLoading] = useState(true);
     const [refreshing, setRefreshing] = useState(false);
     const [error, setError] = useState(null);
+    const [sortBy, setSortBy] = useState('appliedDate');
+    const [sortOrder, setSortOrder] = useState('desc');
+    const [statusFilter, setStatusFilter] = useState('all');
     const navigate = useNavigate();
     const user = getUser();
     const API_URL = process.env.REACT_APP_API_URL;
@@ -29,6 +32,38 @@ const Dashboard = () => {
             'Accepted': 'accepted'
         };
         return statusMap[status] || 'default';
+    };
+
+    // Sort and filter jobs
+    const getSortedAndFilteredJobs = () => {
+        let filteredJobs = [...jobApplications];
+
+        // Apply status filter
+        if (statusFilter !== 'all') {
+            filteredJobs = filteredJobs.filter(job => job.status.toLowerCase() === statusFilter);
+        }
+
+        // Apply sorting
+        filteredJobs.sort((a, b) => {
+            switch (sortBy) {
+                case 'appliedDate':
+                    const dateA = a.appliedDate ? new Date(a.appliedDate) : new Date(0);
+                    const dateB = b.appliedDate ? new Date(b.appliedDate) : new Date(0);
+                    return sortOrder === 'desc' ? dateB - dateA : dateA - dateB;
+                case 'company':
+                    return sortOrder === 'desc'
+                        ? b.company.localeCompare(a.company)
+                        : a.company.localeCompare(b.company);
+                case 'status':
+                    return sortOrder === 'desc'
+                        ? b.status.localeCompare(a.status)
+                        : a.status.localeCompare(b.status);
+                default:
+                    return 0;
+            }
+        });
+
+        return filteredJobs;
     };
 
     const fetchUserData = async () => {
@@ -225,6 +260,47 @@ const Dashboard = () => {
                             </button>
                         </div>
                     </div>
+
+                    {jobApplications.length > 0 && (
+                        <div className="filter-bar">
+                            <div className="sort-controls">
+                                <label>Sort by:</label>
+                                <select
+                                    value={sortBy}
+                                    onChange={(e) => setSortBy(e.target.value)}
+                                    className="sort-select"
+                                >
+                                    <option value="appliedDate">Application Date</option>
+                                    <option value="company">Company</option>
+                                    <option value="status">Status</option>
+                                </select>
+                                <button
+                                    onClick={() => setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')}
+                                    className="sort-direction-button"
+                                    title={sortOrder === 'asc' ? 'Ascending' : 'Descending'}
+                                >
+                                    {sortOrder === 'asc' ? '↑' : '↓'}
+                                </button>
+                            </div>
+                            <div className="filter-controls">
+                                <label>Filter by status:</label>
+                                <select
+                                    value={statusFilter}
+                                    onChange={(e) => setStatusFilter(e.target.value)}
+                                    className="filter-select"
+                                >
+                                    <option value="all">All Status</option>
+                                    <option value="wishlist">Wishlist</option>
+                                    <option value="applied">Applied</option>
+                                    <option value="interview">Interview</option>
+                                    <option value="offer">Offer</option>
+                                    <option value="rejected">Rejected</option>
+                                    <option value="accepted">Accepted</option>
+                                </select>
+                            </div>
+                        </div>
+                    )}
+
                     {jobApplications.length === 0 ? (
                         <div className="empty-state">
                             <p>No job applications yet.</p>
@@ -237,39 +313,39 @@ const Dashboard = () => {
                         </div>
                     ) : (
                         <div className="applications-grid">
-                            {jobApplications.map(job => (
+                                {getSortedAndFilteredJobs().map(job => (
                                 <div className="job-application-card" key={job._id}>
-                                    <div className="job-header">
-                                        <h3>{job.company}</h3>
-                                        <span className={`status-badge ${job.status.toLowerCase()}`}>
-                                            {job.status}
-                                        </span>
-                                    </div>
-                                    <p className="position">{job.position}</p>
-                                    <div className="job-details">
-                                        <p><strong>Location:</strong> {job.location || 'Not specified'}</p>
-                                        <p><strong>Work Type:</strong> {job.remoteStatus}</p>
-                                        {job.salary && <p><strong>Salary:</strong> ${job.salary.toLocaleString()}</p>}
-                                        {job.appliedDate && (
-                                            <p><strong>Applied:</strong> {new Date(job.appliedDate).toLocaleDateString()}</p>
-                                        )}
-                                    </div>
-                                    {job.deadlines && job.deadlines.length > 0 && (
-                                        <div className="deadlines">
-                                            <h4>Deadlines</h4>
-                                            <ul>
-                                                {job.deadlines.map((deadline, index) => (
-                                                    <li key={index}>
-                                                        {deadline.title}: {new Date(deadline.date).toLocaleDateString()}
-                                                    </li>
-                                                ))}
-                                            </ul>
+                                        <div className="job-info">
+                                            <div className="job-header">
+                                                <h3>{job.company}</h3>
+                                                <span className={`status-badge ${job.status.toLowerCase()}`}>
+                                                    {job.status}
+                                                </span>
+                                            </div>
+                                            <p className="position">{job.position}</p>
+                                            <div className="job-details">
+                                                <p><strong>Location:</strong> {job.location || 'Not specified'}</p>
+                                                <p><strong>Work Type:</strong> {job.remoteStatus}</p>
+                                                {job.salary && <p><strong>Salary:</strong> ${job.salary.toLocaleString()}</p>}
+                                                {job.appliedDate && (
+                                                    <p><strong>Applied:</strong> {new Date(job.appliedDate).toLocaleDateString()}</p>
+                                                )}
+                                            </div>
                                         </div>
-                                    )}
+
+                                        <div className="job-meta">
+                                            {job.deadlines && job.deadlines.length > 0 && (
+                                                <div className="deadlines">
+                                                    <h4>Next Deadline</h4>
+                                                    <p>{job.deadlines[0].title}: {new Date(job.deadlines[0].date).toLocaleDateString()}</p>
+                                                </div>
+                                            )}
+                                        </div>
+
                                     <div className="job-actions">
                                         {job.url && (
                                             <a href={job.url} target="_blank" rel="noopener noreferrer" className="job-link">
-                                                View Job Post
+                                                    View Post
                                             </a>
                                         )}
                                         <Link to={`/edit-application/${job._id}`} className="edit-button">
