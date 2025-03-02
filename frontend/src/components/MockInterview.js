@@ -221,21 +221,20 @@ const MockInterview = () => {
 	};
 
 	const generateNewQuestion = () => {
-		if (questionCount >= 5) {
+		if (questionCount >= 1) {
 			setIsSessionComplete(true);
 			setIsRunning(false);
 			setIsStopped(true);
+			navigate('/interview-analysis');
 			return;
 		}
 
 		setCurrentQuestion(
 			startRandomQuestionWorkflow()
 				.then((runId) => {
-					// Immediately after startWorkflow finishes, call getRunDetails
 					return getRandomQuestionRunDetails(runId);
 				})
 				.then((questionOutput) => {
-					// Output the final result for "question"
 					if (questionOutput) {
 						return questionOutput;
 					}
@@ -245,12 +244,10 @@ const MockInterview = () => {
 				})
 		);
 		setQuestionCount((prevCount) => prevCount + 1);
-		// Reset timer and states for new question
 		setTime(120);
 		setIsRunning(false);
 		setHasStarted(false);
 		setIsStopped(false);
-		// Clear the feedback text when moving to next question
 		setFeedbackText("");
 	};
 
@@ -373,7 +370,7 @@ const MockInterview = () => {
 		return `${minutes}:${remainingSeconds.toString().padStart(2, "0")}`;
 	};
 
-	const isLastQuestion = questionCount === 5;
+	const isLastQuestion = questionCount === 1;
 
 	const viewAnalysis = () => {
 		navigate("/interview-analysis");
@@ -430,7 +427,7 @@ const MockInterview = () => {
 
 				<div className="controls-section">
 					<div className="question-counter">
-						Question {questionCount} of 5
+						Question {questionCount} of 1
 					</div>
 					{!isSessionComplete ? (
 						<>
@@ -454,15 +451,22 @@ const MockInterview = () => {
 									</button>
 								</div>
 							</div>
-							<button
-								className="next-question-button"
-								onClick={generateNewQuestion}
-								disabled={!hasStarted}
-							>
-								{isLastQuestion
-									? "Complete Session"
-									: "Next Question"}
-							</button>
+							{hasStarted && isStopped ? (
+								<button
+									className="next-question-button"
+									onClick={viewAnalysis}
+								>
+									View Analysis
+								</button>
+							) : (
+								<button
+									className="next-question-button"
+									onClick={generateNewQuestion}
+									disabled={!hasStarted}
+								>
+									Complete Session
+								</button>
+							)}
 						</>
 					) : (
 						<div className="session-complete">
