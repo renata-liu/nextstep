@@ -19,24 +19,27 @@ const corsOptions = {
     origin: [
         'http://localhost:3001',
         'http://localhost:5173',
-        'https://nextstep-eta.vercel.app' // Remove trailing slash
+        'https://nextstep-eta.vercel.app',
+        'https://nextstep-lthc.onrender.com',
+        // Add any other frontend URLs that need access
     ],
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization'],
-    credentials: true,  // Allow cookies if you're using them
+    credentials: true,
     optionsSuccessStatus: 200
 };
 
 // Apply CORS before other middleware
 app.use(cors(corsOptions));
 
-// Other middleware
+// For development, you can also use a more permissive CORS setting
+if (process.env.NODE_ENV === 'development') {
+    app.use(cors({ origin: true, credentials: true }));
+}
+
+// Basic middleware
 app.use(express.json());
 app.use(morgan('dev'));
-
-// Apply rate limiting
-app.use('/api/', apiLimiter);
-app.use('/api/auth/', authLimiter);
 
 // MongoDB connection with better error handling
 mongoose.set('strictQuery', false);
@@ -46,7 +49,6 @@ console.log('Attempting MongoDB connection...');
 mongoose.connect(MONGODB_URI)
     .then(() => {
         console.log('Connected to MongoDB successfully');
-        // Log the connection state
         console.log('MongoDB connection state:', mongoose.connection.readyState);
     })
     .catch((error) => {
@@ -72,34 +74,96 @@ process.on('unhandledRejection', (err) => {
     }
 });
 
-// Test route with error handling
-app.get('/api/health', (req, res) => {
+// Comprehensive request logging
+app.use((req, res, next) => {
+    console.log('\n=== Incoming Request ===');
+    console.log({
+        timestamp: new Date().toISOString(),
+        method: req.method,
+        url: req.originalUrl,
+        headers: {
+            'content-type': req.headers['content-type'],
+            'authorization': req.headers['authorization'] ? 'Bearer [hidden]' : 'none',
+        }
+    });
+    next();
+});
+
+// Apply rate limiting to API routes
+app.use('/api', apiLimiter);
+
+// Health check route (outside API routes)
+app.get('/health', (req, res) => {
     try {
-        res.json({ status: 'ok', message: 'Server is running' });
+        res.json({
+            status: 'ok',
+            message: 'Server is running',
+            env: process.env.NODE_ENV,
+            mongoConnected: mongoose.connection.readyState === 1
+        });
     } catch (error) {
         console.error('Health check error:', error);
         res.status(500).json({ status: 'error', message: error.message });
     }
 });
 
-// Routes - direct middleware usage
-app.use('/api/auth', authRouter);
-app.use('/api/users', userRouter);
-app.use('/api/jobs', jobRouter);
-app.use('/api/interviews', interviewRouter);
+// Create router for API routes
+const apiRouter = express.Router();
 
-// Add logging middleware before the routes if you want to log access
-app.use((req, res, next) => {
-    console.log('Route accessed:', req.method, req.path);
-    next();
-});
+// Mount routes on the API router
+apiRouter.use('/auth', authRouter);
+apiRouter.use('/users', userRouter);
+apiRouter.use('/jobs', jobRouter);
+apiRouter.use('/interviews', interviewRouter);
 
-// 404 handler
+// Mount the API router at /api
+app.use('/api', apiRouter);
+
+// Add this before your routes
+app.options('*', cors(corsOptions)); // Enable pre-flight for all routes
+
+// 404 handler with detailed logging
 app.use((req, res) => {
-    res.status(404).json({ message: 'Route not found' });
+    console.error('\n=== 404 Error ===');
+    console.error({
+        method: req.method,
+        url: req.originalUrl,
+        headers: req.headers
+    });
+    res.status(404).json({
+        message: 'Route not found',
+        path: req.originalUrl,
+        method: req.method
+    });
 });
 
 // Error handling middleware (should be last)
-app.use(errorHandler);
+app.use((err, req, res, next) => {
+    console.error('\n=== Server Error ===');
+    console.error({
+        error: err.message,
+        stack: err.stack,
+        path: req.originalUrl,
+        method: req.method
+    });
+    res.status(err.status || 500).json({
+        message: err.message || 'Internal server error',
+        path: req.originalUrl,
+        method: req.method
+    });
+});
+
+// Add this error handler for CORS issues
+app.use((err, req, res, next) => {
+    if (err.name === 'CORSError') {
+        res.status(403).json({
+            message: 'CORS error',
+            details: err.message,
+            origin: req.headers.origin
+        });
+    } else {
+        next(err);
+    }
+});
 
 module.exports = app;

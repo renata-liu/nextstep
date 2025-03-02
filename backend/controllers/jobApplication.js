@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const { JobApplication } = require('../models');
 const { auth } = require('../middleware/auth');
+const mongoose = require('mongoose');
 
 // Test endpoint - Get all job applications
 router.get('/test', async (req, res) => {
@@ -43,9 +44,52 @@ router.post('/test', async (req, res) => {
 // Get all job applications for the authenticated user
 router.get('/', auth, async (req, res) => {
     try {
+        console.log('\n=== GET /jobs Debug ===');
+        console.log('User ID from request:', req.user._id);
+        console.log('User ID type:', typeof req.user._id);
+
+        // First check all jobs to see if any exist
+        const allJobs = await JobApplication.find({});
+        console.log('All jobs in database:', allJobs.map(job => ({
+            id: job._id,
+            userId: job.userId,
+            company: job.company
+        })));
+
+        // Now try to find jobs for this specific user
         const jobs = await JobApplication.find({ userId: req.user._id });
+        console.log('Query result:', {
+            searchedUserId: req.user._id,
+            count: jobs.length,
+            isEmpty: jobs.length === 0,
+            jobs: jobs.map(job => ({
+                id: job._id,
+                userId: job.userId,
+                company: job.company
+            }))
+        });
+
+        // Check if collection exists and has documents
+        const collections = await mongoose.connection.db.listCollections().toArray();
+        const jobCollection = collections.find(c => c.name === 'jobapplications');
+        console.log('Collection info:', {
+            exists: !!jobCollection,
+            name: jobCollection?.name,
+            type: jobCollection?.type
+        });
+
+        // Try an alternative query using string comparison
+        const jobsAlt = await JobApplication.find({
+            userId: req.user._id.toString()
+        });
+        console.log('Alternative query result:', {
+            count: jobsAlt.length,
+            isEmpty: jobsAlt.length === 0
+        });
+
         res.json(jobs);
     } catch (error) {
+        console.error('Error in GET /jobs:', error);
         res.status(500).json({ message: error.message });
     }
 });
