@@ -20,19 +20,13 @@ function App() {
         <main className="main-content">
           <Routes>
             <Route path="/" element={<HomePage />} />
-
-            <Route path="/mock-interview" element={
-              <ProtectedRoute>
-                <MockInterview />
-              </ProtectedRoute>
-            } />
+            <Route path="/mock-interview" element={<MockInterview />} />
             <Route path="/login" element={<Login />} />
             <Route path="/dashboard" element={
               <ProtectedRoute>
                 <Dashboard />
               </ProtectedRoute>
             } />
-
             <Route path="/interview-analysis" element={<InterviewAnalysis />} />
             <Route path="/application-tracker" element={<ApplicationTracker />} />
           </Routes>
