@@ -28,6 +28,53 @@ const MockInterview = () => {
 		window.scrollTo(0, 0);
 	}, []);
 
+	/**
+	 * Calls the Gumloop API to start a workflow
+	 * @param {string} chatIdValue - The value for the chatID input
+	 * @param {string} userIdValue - The value for the userID input
+	 * @param {string} linkValue - The value for the link input
+	 * @returns {Promise<Object>} - Response containing run details
+	 */
+	async function startFeedbackWorkflow(chatIdValue, userIdValue, linkValue) {
+		const options = {
+			method: "POST",
+			headers: {
+				Authorization: "Bearer cad77750358c4f4a86d789b41d7fae74",
+				"Content-Type": "application/json",
+			},
+			body: JSON.stringify({
+				user_id: "mIsmdAwErVeNYhMZzyRcKZIJj5z1", // Your user ID here
+				saved_item_id: "tX1RFG9Mz2kgAbkhgGRMNV", // Updated saved item ID
+				pipeline_inputs: [
+					{ input_name: "userID", value: userIdValue },
+					{ input_name: "chatID", value: chatIdValue },
+					{ input_name: "link", value: linkValue },
+				],
+			}),
+		};
+
+		try {
+			const response = await fetch(
+				"https://api.gumloop.com/api/v1/start_pipeline",
+				options
+			);
+
+			if (!response.ok) {
+				const errorData = await response.json().catch(() => null);
+				throw new Error(
+					`API request failed with status ${response.status}: ${
+						errorData ? JSON.stringify(errorData) : "Unknown error"
+					}`
+				);
+			}
+
+			return await response.json();
+		} catch (error) {
+			console.error("Error starting workflow:", error);
+			throw error;
+		}
+	}
+
 	// -----
 	/**
 	 * Calls the Gumloop API to start a workflow
@@ -228,9 +275,8 @@ const MockInterview = () => {
 			// }
 			// const data = await response.json();
 			// setFeedbackText(data.feedback);
-			setFeedbackText(
-				"You Are Doing Great! This is just test feedback :)"
-			);
+
+			setFeedbackText("Great Job! ✅");
 		} catch (error) {
 			console.error("Error getting feedback:", error);
 			setRecordingError("Failed to get feedback. Please try again.");
@@ -369,7 +415,7 @@ const MockInterview = () => {
 									{isProcessing
 										? "Processing Video..."
 										: feedbackText
-										? "AI Feedback:"
+										? "Response:"
 										: "Interview Question:"}
 								</h2>
 								<p className="question-text">
