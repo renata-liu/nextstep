@@ -1,8 +1,9 @@
-import React, { useEffect, useRef, useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { getUser } from "../services/auth";
-import { uploadInterviewVideo } from "../services/videoService";
-import "./MockInterview.css";
+import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { uploadInterviewVideo } from '../services/videoService';
+import { getUser } from '../services/auth';
+import InterviewAnalysis from './InterviewAnalysis';
+import './MockInterview.css';
 
 const MockInterview = () => {
 	const navigate = useNavigate();
