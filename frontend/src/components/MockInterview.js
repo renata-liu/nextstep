@@ -1,6 +1,5 @@
-
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import './MockInterview.css';
 
 const MockInterview = () => {
@@ -13,6 +12,8 @@ const MockInterview = () => {
   const [currentQuestion, setCurrentQuestion] = useState('');
   const [questionCount, setQuestionCount] = useState(1);
   const [isSessionComplete, setIsSessionComplete] = useState(false);
+  const [stream, setStream] = useState(null);
+  const location = useLocation();
 
   // Scroll to top when component mounts
   useEffect(() => {
@@ -27,6 +28,76 @@ const MockInterview = () => {
     "Where do you see yourself in 5 years?",
     "Describe a challenging situation at work and how you handled it."
   ];
+
+  const stopCamera = useCallback(() => {
+    console.log('stopCamera function called', new Date().toISOString());
+
+    if (stream) {
+      console.log('Stopping stream tracks...', stream.getTracks().length, 'tracks found');
+      stream.getTracks().forEach(track => {
+        console.log('Stopping track:', track.kind, track.readyState);
+        track.stop();
+        track.enabled = false;
+        console.log('Track stopped:', track.readyState);
+      });
+      setStream(null);
+    }
+
+    if (videoRef.current && videoRef.current.srcObject) {
+      console.log('Cleaning up video element source');
+      const tracks = videoRef.current.srcObject.getTracks();
+      tracks.forEach(track => {
+        track.stop();
+        track.enabled = false;
+      });
+      videoRef.current.srcObject = null;
+    }
+  }, [stream]);
+
+  // Component mount/unmount cleanup
+  useEffect(() => {
+    console.log('Component mounted');
+    startCamera();
+
+    return () => {
+      console.log('Component unmounting cleanup');
+      stopCamera();
+    };
+  }, [stopCamera]);
+
+  // Route change cleanup
+  useEffect(() => {
+    console.log('Location changed:', location.pathname);
+
+    return () => {
+      console.log('Route change cleanup triggered');
+      stopCamera();
+    };
+  }, [location, stopCamera]);
+
+  // Navigation guard
+  const handleNavigation = useCallback((to) => {
+    console.log('Navigation requested to:', to);
+    stopCamera();
+    navigate(to);
+  }, [navigate, stopCamera]);
+
+  // Optional: Add a confirmation dialog when leaving the page
+  useEffect(() => {
+    const handleBeforeUnload = (e) => {
+      console.log('beforeunload event triggered');
+      stopCamera();
+      // Optional: Show confirmation dialog
+      e.preventDefault();
+      e.returnValue = '';
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+    };
+  }, [stopCamera]);
 
   useEffect(() => {
     startCamera();
@@ -58,6 +129,7 @@ const MockInterview = () => {
       if (videoRef.current) {
         videoRef.current.srcObject = stream;
       }
+      setStream(stream);
     } catch (err) {
       console.error("Error accessing camera:", err);
     }

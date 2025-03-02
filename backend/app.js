@@ -19,16 +19,23 @@ const corsOptions = {
     origin: [
         'http://localhost:3001',
         'http://localhost:5173',
-        'https://nextstep-eta.vercel.app' // Remove trailing slash
+        'https://nextstep-eta.vercel.app',
+        'https://nextstep-lthc.onrender.com',
+        // Add any other frontend URLs that need access
     ],
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization'],
-    credentials: true,  // Allow cookies if you're using them
+    credentials: true,
     optionsSuccessStatus: 200
 };
 
 // Apply CORS before other middleware
 app.use(cors(corsOptions));
+
+// For development, you can also use a more permissive CORS setting
+if (process.env.NODE_ENV === 'development') {
+    app.use(cors({ origin: true, credentials: true }));
+}
 
 // Basic middleware
 app.use(express.json());
@@ -112,6 +119,9 @@ apiRouter.use('/interviews', interviewRouter);
 // Mount the API router at /api
 app.use('/api', apiRouter);
 
+// Add this before your routes
+app.options('*', cors(corsOptions)); // Enable pre-flight for all routes
+
 // 404 handler with detailed logging
 app.use((req, res) => {
     console.error('\n=== 404 Error ===');
@@ -141,6 +151,19 @@ app.use((err, req, res, next) => {
         path: req.originalUrl,
         method: req.method
     });
+});
+
+// Add this error handler for CORS issues
+app.use((err, req, res, next) => {
+    if (err.name === 'CORSError') {
+        res.status(403).json({
+            message: 'CORS error',
+            details: err.message,
+            origin: req.headers.origin
+        });
+    } else {
+        next(err);
+    }
 });
 
 module.exports = app;

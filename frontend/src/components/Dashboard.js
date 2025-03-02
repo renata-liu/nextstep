@@ -184,6 +184,57 @@ const Dashboard = () => {
         setRefreshing(false);
     };
 
+    const exportToGoogleSheets = () => {
+        const sortedJobs = getSortedAndFilteredJobs();
+        const csvContent = [
+            // Headers
+            ['Company', 'Position', 'Status', 'Location', 'Work Type', 'Salary', 'Applied Date', 'Next Deadline'].join(','),
+            // Data rows
+            ...sortedJobs.map(job => [
+                job.company,
+                job.position,
+                job.status,
+                job.location || 'Not specified',
+                job.remoteStatus,
+                job.salary ? `$${job.salary}` : 'Not specified',
+                job.appliedDate ? new Date(job.appliedDate).toLocaleDateString() : 'Not applied',
+                job.deadlines?.length > 0
+                    ? `${job.deadlines[0].title}: ${new Date(job.deadlines[0].date).toLocaleDateString()}`
+                    : 'No deadlines'
+            ].map(field => `"${field}"`).join(','))
+        ].join('\n');
+
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement('a');
+        const date = new Date().toLocaleDateString().replace(/\//g, '-');
+        link.href = URL.createObjectURL(blob);
+        link.download = `job_applications_${date}.csv`;
+        link.click();
+    };
+
+    const exportToCalendar = (job) => {
+        if (!job.deadlines || job.deadlines.length === 0) return;
+
+        const deadline = job.deadlines[0];
+        const startDate = new Date(deadline.date);
+        const endDate = new Date(startDate);
+        endDate.setHours(startDate.getHours() + 1);
+
+        const event = {
+            title: `${deadline.title} - ${job.company}`,
+            description: `Deadline for ${job.position} position at ${job.company}`,
+            startTime: startDate.toISOString(),
+            endTime: endDate.toISOString(),
+            location: job.location || 'Not specified'
+        };
+
+        // Create calendar URL
+        const calendarUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(event.title)}&details=${encodeURIComponent(event.description)}&location=${encodeURIComponent(event.location)}&dates=${event.startTime.replace(/[-:]/g, '')}/${event.endTime.replace(/[-:]/g, '')}`;
+
+        // Open in new tab
+        window.open(calendarUrl, '_blank');
+    };
+
     useEffect(() => {
         console.log('\n=== Component Mount Debug ===');
         console.log('Is authenticated:', isAuthenticated());
@@ -239,6 +290,16 @@ const Dashboard = () => {
                     <div className="section-header">
                         <h2>Job Applications</h2>
                         <div className="section-actions">
+                            <button
+                                onClick={exportToGoogleSheets}
+                                className="export-sheets-button"
+                                title="Export to Google Sheets"
+                            >
+                                <svg className="sheets-icon" viewBox="0 0 24 24" width="20" height="20">
+                                    <path fill="currentColor" d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V5h14v14z" />
+                                    <path fill="currentColor" d="M7 7h10v2H7zM7 11h10v2H7zM7 15h10v2H7z" />
+                                </svg>
+                            </button>
                             <button
                                 onClick={() => navigate('/new-application')}
                                 className="add-button"
@@ -338,6 +399,15 @@ const Dashboard = () => {
                                                 <div className="deadlines">
                                                     <h4>Next Deadline</h4>
                                                     <p>{job.deadlines[0].title}: {new Date(job.deadlines[0].date).toLocaleDateString()}</p>
+                                                    <button
+                                                        onClick={() => exportToCalendar(job)}
+                                                        className="export-calendar-button"
+                                                        title="Export to Google Calendar"
+                                                    >
+                                                        <svg className="calendar-icon" viewBox="0 0 24 24" width="20" height="20">
+                                                            <path fill="currentColor" d="M19 4h-1V2h-2v2H8V2H6v2H5c-1.11 0-1.99.9-1.99 2L3 20c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V10h14v10zM9 14H7v-2h2v2zm4 0h-2v-2h2v2zm4 0h-2v-2h2v2zm-8 4H7v-2h2v2zm4 0h-2v-2h2v2zm4 0h-2v-2h2v2z" />
+                                                        </svg>
+                                                    </button>
                                                 </div>
                                             )}
                                         </div>
@@ -359,59 +429,92 @@ const Dashboard = () => {
                 </section>
 
                 <section className="dashboard-section">
-                    <h2>Mock Interviews</h2>
+                    <div className="section-header">
+                        <h2>Mock Interviews</h2>
+                        <div className="section-actions">
+                            <button
+                                className="add-button"
+                                onClick={() => navigate('/mock-interview')}
+                            >
+                                <svg className="plus-icon" viewBox="0 0 24 24" width="16" height="16">
+                                    <path fill="currentColor" d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z" />
+                                </svg>
+                                Start New Interview
+                            </button>
+                        </div>
+                    </div>
+
                     {interviews.length === 0 ? (
                         <div className="empty-state">
-                            <p>No mock interviews completed yet.</p>
-                            <button onClick={() => navigate('/mock-interview')} className="add-button">
-                                Start Your First Interview
-                            </button>
+                            <div className="empty-state-content">
+                                <div className="empty-state-icon">🎯</div>
+                                <h3>No Mock Interviews Yet</h3>
+                                <p>Practice your interview skills with our AI-powered mock interviews.</p>
+                                <button
+                                    className="add-button"
+                                    onClick={() => navigate('/mock-interview')}
+                                >
+                                    Start Your First Interview
+                                </button>
+                            </div>
                         </div>
                     ) : (
                         <div className="interviews-grid">
                             {interviews.map(interview => (
                                 <div key={interview._id} className="interview-card">
-                                    <h3>Interview Session</h3>
-                                    <p className="date">
-                                        <span className="icon">📅</span>
-                                        {new Date(interview.date).toLocaleDateString()}
-                                    </p>
-                                    {interview.jobApplicationId && (
-                                        <p className="job-link">
-                                            <span className="icon">🔗</span>
-                                            Linked to job application
-                                        </p>
-                                    )}
-                                    <div className="interview-stats">
-                                        <p className="questions-count">
-                                            <span className="icon">❓</span>
-                                            Questions: {interview.questions?.length || 0}
-                                        </p>
-                                        {interview.overallAnalysis && (
-                                            <>
-                                                <p className="score">
-                                                    <span className="icon">📊</span>
-                                                    Score: {interview.overallAnalysis.score || 'N/A'}
-                                                </p>
-                                                {interview.overallAnalysis.keyInsights && (
-                                                    <div className="key-insights">
-                                                        <p>Key Insights:</p>
-                                                        <ul>
-                                                            {interview.overallAnalysis.keyInsights.slice(0, 2).map((insight, index) => (
-                                                                <li key={index}>{insight}</li>
-                                                            ))}
-                                                        </ul>
-                                                    </div>
-                                                )}
-                                            </>
+                                    <div className="interview-card-header">
+                                        <div className="interview-date">
+                                            <span className="text-sm text-muted-foreground">
+                                                {new Date(interview.date).toLocaleDateString('en-US', {
+                                                    month: 'short',
+                                                    day: 'numeric',
+                                                    year: 'numeric'
+                                                })}
+                                            </span>
+                                        </div>
+                                        {interview.overallAnalysis?.score && (
+                                            <div className="interview-score">
+                                                <div className="score-badge">
+                                                    {interview.overallAnalysis.score}
+                                                </div>
+                                            </div>
                                         )}
                                     </div>
-                                    <button
-                                        onClick={() => navigate(`/interview/${interview._id}`)}
-                                        className="view-button"
-                                    >
-                                        View Details
-                                    </button>
+
+                                    <div className="interview-card-content">
+                                        <div className="interview-stats">
+                                            <div className="stat-item">
+                                                <span className="stat-label">Questions</span>
+                                                <span className="stat-value">{interview.questions?.length || 0}</span>
+                                            </div>
+                                            {interview.jobApplicationId && (
+                                                <div className="stat-item">
+                                                    <span className="stat-label">Linked Job</span>
+                                                    <span className="stat-value">✓</span>
+                                                </div>
+                                            )}
+                                        </div>
+
+                                        {interview.overallAnalysis?.keyInsights && (
+                                            <div className="interview-insights">
+                                                <h4 className="insights-title">Key Insights</h4>
+                                                <ul className="insights-list">
+                                                    {interview.overallAnalysis.keyInsights.slice(0, 2).map((insight, index) => (
+                                                        <li key={index}>{insight}</li>
+                                                    ))}
+                                                </ul>
+                                            </div>
+                                        )}
+                                    </div>
+
+                                    <div className="interview-card-footer">
+                                        <button
+                                            className="view-button"
+                                            onClick={() => navigate(`/interview/${interview._id}`)}
+                                        >
+                                            View Details
+                                        </button>
+                                    </div>
                                 </div>
                             ))}
                         </div>

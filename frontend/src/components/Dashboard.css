@@ -49,31 +49,64 @@
     align-items: center;
 }
 
-.add-button {
+/* Common button styles */
+.add-button,
+.refresh-button,
+.retry-button,
+.view-button,
+.job-link,
+.edit-button,
+.sort-direction-button {
     display: flex;
     align-items: center;
     gap: 0.5rem;
     padding: 0.5rem 1rem;
-    background-color: #4CAF50;
+    background-color: #4f46e5;
     color: white;
     border: none;
     border-radius: 4px;
     cursor: pointer;
     font-weight: 500;
-    transition: background-color 0.2s;
+    transition: all 0.2s ease;
+    text-decoration: none;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+            'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+            sans-serif;
+        font-size: 0.875rem;
 }
 
-.add-button:hover {
-    background-color: #45a049;
+.add-button:hover,
+.refresh-button:hover,
+.retry-button:hover,
+.view-button:hover,
+.job-link:hover,
+.edit-button:hover,
+.sort-direction-button:hover {
+    background-color: #4338ca;
+    transform: translateY(-1px);
 }
 
-.add-button:active {
+.add-button:active,
+.refresh-button:active,
+.retry-button:active,
+.view-button:active,
+.job-link:active,
+.edit-button:active {
     transform: translateY(1px);
 }
 
-.add-button:disabled {
-    background-color: #cccccc;
+.add-button:disabled,
+.refresh-button:disabled,
+.retry-button:disabled,
+.view-button:disabled {
+    background-color: #94a3b8;
     cursor: not-allowed;
+    transform: none;
+}
+
+/* Keep the refresh animation */
+.refresh-button.refreshing .refresh-icon {
+    animation: spin 1s linear infinite;
 }
 
 .plus-icon {
@@ -81,37 +114,25 @@
     height: 16px;
 }
 
-/* Improve refresh button styling to match */
-.refresh-button {
+/* Sort and filter controls */
+.sort-direction-button {
+    padding: 0.5rem;
+    border: 1px solid #e5e7eb;
+    border-radius: 0.375rem;
+    background-color: #4f46e5;
+    color: white;
+    cursor: pointer;
     display: flex;
     align-items: center;
-    gap: 0.5rem;
-    padding: 0.5rem 1rem;
-    background-color: #f0f0f0;
-        color: #333;
-        border: 1px solid #ddd;
-    border-radius: 4px;
-    cursor: pointer;
-    font-weight: 500;
-        transition: all 0.2s;
+    justify-content: center;
+    width: 2.5rem;
+        height: 2.5rem;
+        font-size: 1rem;
+        transition: all 0.2s ease;
 }
 
-.refresh-button:hover {
-    background-color: #e4e4e4;
-    }
-    
-    .refresh-button:active {
-        transform: translateY(1px);
-}
-
-.refresh-button:disabled {
-    background-color: #f5f5f5;
-        color: #999;
-    cursor: not-allowed;
-}
-
-.refresh-button.refreshing .refresh-icon {
-    animation: spin 1s linear infinite;
+.sort-direction-button:hover {
+    background-color: #4338ca;
 }
 
 .empty-state {
@@ -135,7 +156,7 @@
     padding: 1rem;
     background: #e5e7eb;
     border-radius: 0.5rem;
-        border: 1px solid #d1d5db;
+    border: 1px solid #d1d5db;
     }
     
 .applications-grid {
@@ -144,6 +165,7 @@
     gap: 1rem;
     margin-top: 1rem;
 }
+
 .job-application-card {
     background: var(--white);
     border: 1px solid rgba(0, 0, 0, 0.1);
@@ -151,9 +173,10 @@
     padding: 1.5rem;
     transition: all 0.3s ease;
     display: grid;
-        grid-template-columns: 2fr 1fr auto;
-        align-items: center;
-        gap: 1.5rem;
+    grid-template-columns: 2fr 1fr auto;
+    align-items: start;
+    gap: 1.5rem;
+    position: relative;
 }
 .job-application-card:hover {
     transform: translateY(-2px);
@@ -205,12 +228,14 @@
 
 .status-badge {
     display: inline-flex;
-        align-items: center;
+    align-items: center;
     padding: 0.375rem 0.75rem;
-    border-radius: 999px;
+    border-radius: 6px;
     font-size: 0.75rem;
     font-weight: 500;
     text-transform: capitalize;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+    border: 1px solid;
 }
 
 .job-actions {
@@ -284,33 +309,39 @@
 }
 
 .status-badge.wishlist {
-    background: #dbeafe;
-    color: #1e40af;
+    background: #f5f3ff;
+    color: #5b21b6;
+        border-color: #ddd6fe;
 }
 
 .status-badge.applied {
-    background: #fef3c7;
-    color: #92400e;
+    background: #fff7ed;
+    color: #9a3412;
+        border-color: #fed7aa;
 }
 
 .status-badge.interview {
-    background: #dcfce7;
-    color: #166534;
+    background: #f0fdf4;
+    color: #15803d;
+        border-color: #bbf7d0;
 }
 
 .status-badge.offer {
-    background: #f3e8ff;
-    color: #6b21a8;
+    background: #faf5ff;
+    color: #7e22ce;
+        border-color: #e9d5ff;
 }
 
 .status-badge.rejected {
-    background: #fee2e2;
-    color: #991b1b;
+    background: #fef2f2;
+    color: #b91c1c;
+        border-color: #fecaca;
 }
 
 .status-badge.accepted {
-    background: #bbf7d0;
-    color: #15803d;
+    background: #ecfdf5;
+    color: #047857;
+        border-color: #a7f3d0;
 }
 
 .position,
@@ -326,27 +357,29 @@
 }
 .icon {
     font-size: 1rem;
-        opacity: 0.8;
+    opacity: 0.8;
     }
     
-    .view-button {
-        background-color: transparent;
-        border: 1px solid var(--primary-color);
-        color: var(--primary-color);
-        padding: 0.5rem 1rem;
-        border-radius: 0.5rem;
-        font-size: 0.875rem;
-        font-weight: 500;
-        cursor: pointer;
-        transition: all 0.3s ease;
-        width: 100%;
-        margin-top: 1rem;
-        text-align: center;
-    }
-    
-    .view-button:hover {
-        background-color: var(--primary-color);
-        color: var(--white);
+.view-button {
+    background-color: #4f46e5;
+    color: white;
+    padding: 0.5rem 1rem;
+    border-radius: 0.5rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    width: auto;
+    min-width: 120px;
+    margin-top: 1rem;
+    text-align: center;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.view-button:hover {
+    background-color: #4338ca;
 }
 
 .retry-button {
@@ -372,7 +405,7 @@
     justify-content: center;
     align-items: center;
     min-height: calc(100vh - 72px);
-        font-size: 1.25rem;
+    font-size: 1.25rem;
         color: var(--text-color);
     }
     
@@ -404,34 +437,29 @@
 @media (max-width: 768px) {
     .dashboard-container {
         padding: 1rem;
-    }
-
-                                                                .dashboard-sections {
-                                                                    grid-template-columns: 1fr;
-                                                                }
-
-                                                                .dashboard-section {
-                                                                    padding: 1.5rem;
-                                                                }
-
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                .job-application-card {
-                                                                    grid-template-columns: 1fr;
-                                                                    gap: 1rem;
-                                                                }
-
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                .job-meta {
-                                                                    align-items: flex-start;
-                                                                }
-
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                .job-actions {
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    justify-content: flex-start;
-                                                                }
+    
+        .dashboard-sections {
+            grid-template-columns: 1fr;
+        }
+        .dashboard-section {
+            padding: 1.5rem;
+        }
+        .job-application-card {
+            grid-template-columns: 1fr;
+            gap: 1rem;
+        }
+        .job-meta {
+            align-items: flex-start;
+        }
+        .job-actions {
+            justify-content: flex-start;
+        }
 }
-
+                                                                                                                                                                                                                                                                }
 .job-actions {
     display: flex;
     gap: 1rem;
-        margin-top: 1rem;
+    margin-top: 1rem;
         justify-content: flex-end;
     }
     
@@ -446,7 +474,7 @@
 
 .job-link {
     background-color: #e0e7ff;
-        color: #4f46e5;
+    color: #4f46e5;
 }
 
 .job-link:hover {
@@ -509,8 +537,8 @@
     padding: 0.5rem;
     border: 1px solid #e5e7eb;
     border-radius: 0.375rem;
-    background-color: white;
-    color: #374151;
+    background-color: #4f46e5;
+    color: white;
     cursor: pointer;
     display: flex;
     align-items: center;
@@ -518,11 +546,11 @@
     width: 2.5rem;
     height: 2.5rem;
     font-size: 1rem;
+    transition: all 0.2s ease;
 }
 
 .sort-direction-button:hover {
-    background-color: #f9fafb;
-    border-color: #d1d5db;
+    background-color: #4338ca;
 }
 
 .filter-bar label {
@@ -547,4 +575,211 @@
     .filter-select {
         flex: 1;
     }
+}
+/* Mock Interview Section */
+.interviews-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1.5rem;
+    margin-top: 1rem;
+}
+
+.interview-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    transition: all 0.2s ease-in-out;
+    min-height: 300px;
+    position: relative;
+}
+
+.interview-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+.interview-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.interview-date {
+    color: var(--muted-foreground);
+}
+
+.score-badge {
+    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-foreground) 100%);
+    color: white;
+    padding: 0.5rem 0.75rem;
+    border-radius: var(--radius);
+    font-weight: 600;
+    font-size: 1.125rem;
+}
+
+.interview-stats {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+    padding: 1rem 0;
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+}
+
+.stat-item {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.stat-label {
+    font-size: 0.875rem;
+    color: var(--muted-foreground);
+}
+
+.stat-value {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: var(--foreground);
+}
+
+.interview-insights {
+    margin-top: 1rem;
+}
+
+.insights-title {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--foreground);
+    margin-bottom: 0.5rem;
+}
+
+.insights-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.insights-list li {
+    font-size: 0.875rem;
+    color: var(--muted-foreground);
+    margin-bottom: 0.5rem;
+    padding-left: 1.25rem;
+    position: relative;
+}
+
+.insights-list li::before {
+    content: "•";
+    position: absolute;
+    left: 0;
+    color: var(--primary);
+}
+
+.interview-card-footer {
+    position: absolute;
+    bottom: 1.5rem;
+    right: 1.5rem;
+    width: auto;
+}
+
+.empty-state-content {
+    text-align: center;
+    justify-content: center;
+    align-items: center;
+    padding: 3rem;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+}
+
+.add-button {
+    margin-left: 7.5rem;
+}
+
+.empty-state-icon {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+}
+
+.empty-state-content h3 {
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    color: var(--foreground);
+}
+
+.empty-state-content p {
+    color: var(--muted-foreground);
+    margin-bottom: 1.5rem;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .interviews-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .interview-card {
+        padding: 1rem;
+    }
+
+    .empty-state-content {
+        padding: 2rem 1rem;
+    }
+}
+
+.export-calendar-button {
+    position: absolute;
+    bottom: 1rem;
+    right: 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.5rem;
+    background-color: white;
+    color: #4f46e5;
+    border: 1px solid #e5e7eb;
+    border-radius: 0.375rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    width: 36px;
+        height: 36px;
+}
+
+.export-calendar-button:hover {
+    background-color: #f5f5f5;
+    border-color: #4f46e5;
+}
+
+.calendar-icon {
+    width: 20px;
+    height: 20px;
+}
+
+.export-sheets-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.5rem;
+    background-color: #15803d;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    width: 36px;
+    height: 36px;
+}
+
+.export-sheets-button:hover {
+    background-color: #166534;
+}
+
+.sheets-icon {
+    width: 20px;
+    height: 20px;
 }

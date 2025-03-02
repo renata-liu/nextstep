@@ -45,14 +45,28 @@ router.post('/test', async (req, res) => {
 router.get('/', auth, async (req, res) => {
     try {
         console.log('\n=== GET /jobs Debug ===');
-        console.log('User ID:', req.user._id);
-        console.log('User object:', req.user);
+        console.log('User ID from request:', req.user._id);
+        console.log('User ID type:', typeof req.user._id);
 
+        // First check all jobs to see if any exist
+        const allJobs = await JobApplication.find({});
+        console.log('All jobs in database:', allJobs.map(job => ({
+            id: job._id,
+            userId: job.userId,
+            company: job.company
+        })));
+
+        // Now try to find jobs for this specific user
         const jobs = await JobApplication.find({ userId: req.user._id });
         console.log('Query result:', {
+            searchedUserId: req.user._id,
             count: jobs.length,
             isEmpty: jobs.length === 0,
-            firstJob: jobs[0] ? { id: jobs[0]._id, company: jobs[0].company } : null
+            jobs: jobs.map(job => ({
+                id: job._id,
+                userId: job.userId,
+                company: job.company
+            }))
         });
 
         // Check if collection exists and has documents
@@ -64,10 +78,14 @@ router.get('/', auth, async (req, res) => {
             type: jobCollection?.type
         });
 
-        if (jobCollection) {
-            const totalJobs = await JobApplication.countDocuments({});
-            console.log('Total jobs in collection:', totalJobs);
-        }
+        // Try an alternative query using string comparison
+        const jobsAlt = await JobApplication.find({
+            userId: req.user._id.toString()
+        });
+        console.log('Alternative query result:', {
+            count: jobsAlt.length,
+            isEmpty: jobsAlt.length === 0
+        });
 
         res.json(jobs);
     } catch (error) {
