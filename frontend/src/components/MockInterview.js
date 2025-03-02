@@ -1,6 +1,7 @@
-
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { uploadInterviewVideo } from '../services/videoService';
+import { getUser } from '../services/auth';
 import './MockInterview.css';
 
 const MockInterview = () => {
@@ -10,9 +11,15 @@ const MockInterview = () => {
   const [hasStarted, setHasStarted] = useState(false);
   const [isStopped, setIsStopped] = useState(false);
   const videoRef = useRef(null);
+  const mediaRecorderRef = useRef(null);
   const [currentQuestion, setCurrentQuestion] = useState('');
   const [questionCount, setQuestionCount] = useState(1);
   const [isSessionComplete, setIsSessionComplete] = useState(false);
+  const [recordings, setRecordings] = useState([]);
+  const [isRecording, setIsRecording] = useState(false);
+  const [recordingError, setRecordingError] = useState(null);
+  const chunksRef = useRef([]);
+  const isAuthenticated = !!getUser();
 
   // Scroll to top when component mounts
   useEffect(() => {
@@ -80,15 +87,64 @@ const MockInterview = () => {
     setIsStopped(false);
   };
 
+  const startRecording = async () => {
+    try {
+      chunksRef.current = [];
+      const stream = videoRef.current.srcObject;
+      const mediaRecorder = new MediaRecorder(stream, {
+        mimeType: 'video/webm;codecs=vp8,opus'
+      });
+
+      mediaRecorder.ondataavailable = (event) => {
+        if (event.data.size > 0) {
+          chunksRef.current.push(event.data);
+        }
+      };
+
+      mediaRecorder.onstop = async () => {
+        const videoBlob = new Blob(chunksRef.current, { type: 'video/webm' });
+        try {
+          const result = await uploadInterviewVideo(videoBlob, questionCount);
+          setRecordings(prev => [...prev, {
+            url: result.url,
+            timestamp: result.timestamp,
+            questionNumber: questionCount,
+            isAuthenticated: result.isAuthenticated,
+            filename: result.filename
+          }]);
+        } catch (error) {
+          console.error('Error saving recording:', error);
+          setRecordingError('Failed to save recording. Please try again.');
+        }
+      };
+
+      mediaRecorderRef.current = mediaRecorder;
+      mediaRecorder.start();
+      setIsRecording(true);
+    } catch (error) {
+      console.error('Error starting recording:', error);
+      setRecordingError('Failed to start recording. Please check camera permissions.');
+    }
+  };
+
+  const stopRecording = () => {
+    if (mediaRecorderRef.current && isRecording) {
+      mediaRecorderRef.current.stop();
+      setIsRecording(false);
+    }
+  };
+
   const toggleTimer = () => {
     if (!hasStarted) {
       // First time starting
       setHasStarted(true);
       setIsRunning(true);
+      startRecording();
     } else {
       // Stopping the timer
       setIsRunning(false);
       setIsStopped(true);
+      stopRecording();
     }
   };
 
@@ -104,9 +160,26 @@ const MockInterview = () => {
     navigate('/interview-analysis');
   };
 
+  // Clean up URLs when component unmounts
+  useEffect(() => {
+    return () => {
+      // Clean up object URLs
+      recordings.forEach(recording => {
+        if (recording.url) {
+          URL.revokeObjectURL(recording.url);
+        }
+      });
+    };
+  }, [recordings]);
+
   return (
     <div className="mock-interview-container">
       <h1>Mock Interview Practice</h1>
+      {recordingError && (
+        <div className="error-message">
+          {recordingError}
+        </div>
+      )}
       <div className="interview-main">
         <div className="content-section">
           <div className="video-section">
@@ -157,12 +230,29 @@ const MockInterview = () => {
           ) : (
             <div className="session-complete">
               <p className="completion-message">Practice session complete! 🎉</p>
-              <button 
-                className="new-session-button"
-                onClick={viewAnalysis}
-              >
-                View Analysis
-              </button>
+              {!isAuthenticated ? (
+                <div className="login-prompt-container">
+                  <p>Create an account to:</p>
+                  <ul>
+                    <li>Save your recordings permanently</li>
+                    <li>Get AI-powered feedback</li>
+                    <li>Track your progress</li>
+                  </ul>
+                  <button 
+                    className="login-button"
+                    onClick={() => navigate('/login')}
+                  >
+                    Sign Up Now
+                  </button>
+                </div>
+              ) : (
+                <button 
+                  className="new-session-button"
+                  onClick={viewAnalysis}
+                >
+                  View Analysis
+                </button>
+              )}
             </div>
           )}
           <div className="tips-card">
@@ -176,6 +266,27 @@ const MockInterview = () => {
           </div>
         </div>
       </div>
+      {!isSessionComplete && recordings.length > 0 && (
+        <div className="recordings-section">
+          <h2>Your Recordings</h2>
+          <div className="recordings-grid">
+            {recordings.map((recording, index) => (
+              <div key={index} className="recording-card">
+                <h3>Question {recording.questionNumber}</h3>
+                <video controls src={recording.url} className="recording-playback" />
+                <p className="recording-timestamp">
+                  Recorded at: {new Date(recording.timestamp).toLocaleTimeString()}
+                </p>
+                {!recording.isAuthenticated && (
+                  <p className="login-prompt">
+                    Log in to access additional features like AI feedback and progress tracking
+                  </p>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 };
