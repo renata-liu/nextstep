@@ -80,7 +80,7 @@ const MockInterview = () => {
 		const options = {
 			method: "GET",
 			headers: {
-				Authorization: "Bearer cad77750358c4f4a86d789b41d7fae74", // Bearer token for authorization
+				Authorization: "Bearer cad77750358c4f4a86d789b41d7fae74",
 			},
 		};
 
@@ -423,31 +423,12 @@ const MockInterview = () => {
 							<p className="completion-message">
 								Practice session complete! 🎉
 							</p>
-							{!isAuthenticated ? (
-								<div className="login-prompt-container">
-									<p>Create an account to:</p>
-									<ul>
-										<li>
-											Save your recordings permanently
-										</li>
-										<li>Get AI-powered feedback</li>
-										<li>Track your progress</li>
-									</ul>
-									<button
-										className="login-button"
-										onClick={() => navigate("/login")}
-									>
-										Sign Up Now
-									</button>
-								</div>
-							) : (
-								<button
-									className="new-session-button"
-									onClick={viewAnalysis}
-								>
-									View Analysis
-								</button>
-							)}
+							<button
+								className="new-session-button"
+								onClick={viewAnalysis}
+							>
+								View Analysis
+							</button>
 						</div>
 					)}
 					<div className="tips-card">
