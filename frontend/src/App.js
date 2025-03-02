@@ -20,11 +20,13 @@ function App() {
         <main className="main-content">
           <Routes>
             <Route path="/" element={<HomePage />} />
+
             <Route path="/mock-interview" element={
               <ProtectedRoute>
                 <MockInterview />
               </ProtectedRoute>
             } />
+
             <Route path="/login" element={<Login />} />
             <Route path="/dashboard" element={
               <ProtectedRoute>
