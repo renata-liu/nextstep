@@ -1,38 +1,44 @@
 const mongoose = require('mongoose');
-const { Schema } = mongoose;
 
-const mockInterviewSchema = new Schema({
+const questionSchema = new mongoose.Schema({
+    question: {
+        type: String,
+        required: true
+    },
+    answer: {
+        type: String,
+        required: true
+    },
+    feedback: String,
+    score: Number
+});
+
+const mockInterviewSchema = new mongoose.Schema({
     userId: {
-        type: Schema.Types.ObjectId,
+        type: mongoose.Schema.Types.ObjectId,
         ref: 'User',
         required: true
     },
     jobApplicationId: {
-        type: Schema.Types.ObjectId,
+        type: mongoose.Schema.Types.ObjectId,
         ref: 'JobApplication'
     },
     date: {
         type: Date,
         default: Date.now
     },
-    questions: [{
-        question: String,
-        videoUrl: String,
-        transcription: String,
-        analysis: {
-            score: Number,
-            strengths: [String],
-            weaknesses: [String],
-            suggestions: [String]
-        }
-    }],
+    questions: [questionSchema],
     overallAnalysis: {
         score: Number,
-        summary: String,
         keyInsights: [String],
-        improvementAreas: [String]
+        strengths: [String],
+        improvements: [String]
     },
     gumloopResponseId: String
+}, {
+    timestamps: true
 });
 
-module.exports = mongoose.model('MockInterview', mockInterviewSchema); 
+const MockInterview = mongoose.model('MockInterview', mockInterviewSchema);
+
+module.exports = MockInterview; 
