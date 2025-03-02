@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { getUser, isAuthenticated } from '../services/auth';
 import './Dashboard.css';
 
@@ -34,73 +34,111 @@ const Dashboard = () => {
     const fetchUserData = async () => {
         try {
             const token = localStorage.getItem('token');
+            const user = getUser();
 
-            // Log the request details
-            console.log('Making request to:', API_URL);
+            // Debug authentication info
+            console.log('=== Authentication Debug ===');
+            console.log('Token exists:', !!token);
+            console.log('User exists:', !!user);
             console.log('User ID:', user?._id);
-            console.log('Token:', token);
+            console.log('API URL:', API_URL);
 
             if (!token || !user?._id) {
                 throw new Error('Authentication required. Please log in again.');
             }
 
+            // Construct full URLs
+            const jobsUrl = `${API_URL}/jobs`;
+            const interviewsUrl = `${API_URL}/interviews`;
+
+            // Debug request details
+            console.log('\n=== Request Debug ===');
+            console.log('Jobs URL:', jobsUrl);
+            console.log('Interviews URL:', interviewsUrl);
+            console.log('Headers:', {
+                'Authorization': `Bearer ${token.substring(0, 10)}...`,
+                'Content-Type': 'application/json'
+            });
+
             // Fetch job applications with proper error handling
-            const jobsResponse = await fetch(`${API_URL}/jobs`, {
+            const jobsResponse = await fetch(jobsUrl, {
                 headers: {
                     'Authorization': `Bearer ${token}`,
                     'Content-Type': 'application/json'
                 }
             });
 
-            // Add error check before parsing JSON
-            if (jobsResponse.headers.get('content-type')?.includes('html')) {
-                console.error('Received HTML instead of JSON. Backend might be down or wrong endpoint');
-                throw new Error('Invalid server response. Please try again later.');
+            // Debug response details
+            console.log('\n=== Response Debug ===');
+            console.log('Response status:', jobsResponse.status);
+            console.log('Response headers:', {
+                'content-type': jobsResponse.headers.get('content-type'),
+                'content-length': jobsResponse.headers.get('content-length')
+            });
+
+            // Check for non-JSON response
+            const contentType = jobsResponse.headers.get('content-type');
+            if (contentType && !contentType.includes('application/json')) {
+                console.error('Received non-JSON response:', contentType);
+                const text = await jobsResponse.text();
+                console.error('Response text:', text);
+                throw new Error('Invalid server response format');
             }
 
-            // Log the response details
-            console.log('Jobs Response Status:', jobsResponse.status);
             const jobsData = await jobsResponse.json();
-            console.log('Jobs Data:', jobsData);
+
+            // Debug response data
+            console.log('\n=== Jobs Data Debug ===');
+            console.log('Jobs count:', Array.isArray(jobsData) ? jobsData.length : 'Not an array');
+            console.log('Jobs data structure:', jobsData);
+            if (!Array.isArray(jobsData)) {
+                console.error('Expected array but received:', typeof jobsData);
+                console.error('Data:', jobsData);
+            }
 
             if (!jobsResponse.ok) {
                 throw new Error(jobsData.message || 'Failed to fetch job applications');
             }
 
-            // Fetch interviews with proper error handling
-            const interviewsResponse = await fetch(`${API_URL}/interviews`, {
+            // Debug interviews request
+            console.log('\n=== Interviews Request Debug ===');
+            const interviewsResponse = await fetch(interviewsUrl, {
                 headers: {
                     'Authorization': `Bearer ${token}`,
                     'Content-Type': 'application/json'
                 }
             });
 
-            // Add error check before parsing JSON
-            if (interviewsResponse.headers.get('content-type')?.includes('html')) {
-                console.error('Received HTML instead of JSON. Backend might be down or wrong endpoint');
-                throw new Error('Invalid server response. Please try again later.');
-            }
+            // Debug interviews response
+            console.log('Interviews response status:', interviewsResponse.status);
 
-            // Log the response details
-            console.log('Interviews Response Status:', interviewsResponse.status);
             const interviewsData = await interviewsResponse.json();
-            console.log('Interviews Data:', interviewsData);
+            console.log('Interviews count:', Array.isArray(interviewsData) ? interviewsData.length : 'Not an array');
 
             if (!interviewsResponse.ok) {
                 throw new Error(interviewsData.message || 'Failed to fetch interviews');
             }
 
-            setJobApplications(jobsData);
-            setInterviews(interviewsData);
+            // Update state with fetched data
+            console.log('\n=== State Update ===');
+            console.log('Updating jobApplications with count:', Array.isArray(jobsData) ? jobsData.length : 0);
+            console.log('Updating interviews with count:', Array.isArray(interviewsData) ? interviewsData.length : 0);
+
+            setJobApplications(Array.isArray(jobsData) ? jobsData : []);
+            setInterviews(Array.isArray(interviewsData) ? interviewsData : []);
             setError(null);
+
         } catch (err) {
-            const errorMessage = `Failed to fetch user data: ${err.message}`;
-            console.error('Dashboard fetch error:', {
-                error: err,
+            console.error('\n=== Error Debug ===');
+            console.error('Error details:', {
+                message: err.message,
+                stack: err.stack,
                 API_URL,
                 userId: user?._id,
                 hasToken: !!localStorage.getItem('token')
             });
+
+            const errorMessage = `Failed to fetch user data: ${err.message}`;
             setError(errorMessage);
         }
     };
@@ -112,8 +150,13 @@ const Dashboard = () => {
     };
 
     useEffect(() => {
-        // Check if user is authenticated
+        console.log('\n=== Component Mount Debug ===');
+        console.log('Is authenticated:', isAuthenticated());
+        console.log('API_URL configured:', !!API_URL);
+        console.log('User data:', getUser());
+
         if (!isAuthenticated()) {
+            console.log('User not authenticated, redirecting to login');
             navigate('/login');
             return;
         }
@@ -125,13 +168,15 @@ const Dashboard = () => {
         }
 
         const loadInitialData = async () => {
+            console.log('Starting initial data load...');
             setLoading(true);
             await fetchUserData();
             setLoading(false);
+            console.log('Initial data load complete');
         };
 
         loadInitialData();
-    }, [navigate, user?._id, API_URL]);
+    }, [navigate, API_URL]);
 
     if (loading) {
         return <div className="dashboard-loading">Loading...</div>;
@@ -158,16 +203,27 @@ const Dashboard = () => {
                 <section className="dashboard-section">
                     <div className="section-header">
                         <h2>Job Applications</h2>
-                        <button
-                            onClick={handleRefresh}
-                            className={`refresh-button ${refreshing ? 'refreshing' : ''}`}
-                            disabled={refreshing}
-                        >
-                            {refreshing ? 'Refreshing...' : 'Refresh'}
-                            <svg className="refresh-icon" viewBox="0 0 24 24" width="16" height="16">
-                                <path fill="currentColor" d="M17.65 6.35A7.958 7.958 0 0012 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08A5.99 5.99 0 0112 18c-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z" />
-                            </svg>
-                        </button>
+                        <div className="section-actions">
+                            <button
+                                onClick={() => navigate('/new-application')}
+                                className="add-button"
+                            >
+                                <svg className="plus-icon" viewBox="0 0 24 24" width="16" height="16">
+                                    <path fill="currentColor" d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z" />
+                                </svg>
+                                Add Job
+                            </button>
+                            <button
+                                onClick={handleRefresh}
+                                className={`refresh-button ${refreshing ? 'refreshing' : ''}`}
+                                disabled={refreshing}
+                            >
+                                {refreshing ? 'Refreshing...' : 'Refresh'}
+                                <svg className="refresh-icon" viewBox="0 0 24 24" width="16" height="16">
+                                    <path fill="currentColor" d="M17.65 6.35A7.958 7.958 0 0012 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08A5.99 5.99 0 0112 18c-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z" />
+                                </svg>
+                            </button>
+                        </div>
                     </div>
                     {jobApplications.length === 0 ? (
                         <div className="empty-state">
@@ -182,49 +238,44 @@ const Dashboard = () => {
                     ) : (
                         <div className="applications-grid">
                             {jobApplications.map(job => (
-                                <div key={job._id} className="application-card">
-                                    <h3>{job.company}</h3>
-                                    <p className="position">{job.position}</p>
-                                    <div className={`status-badge ${getStatusClass(job.status)}`}>
-                                        {job.status}
+                                <div className="job-application-card" key={job._id}>
+                                    <div className="job-header">
+                                        <h3>{job.company}</h3>
+                                        <span className={`status-badge ${job.status.toLowerCase()}`}>
+                                            {job.status}
+                                        </span>
                                     </div>
-                                    {job.salary && (
-                                        <p className="salary">
-                                            <span className="icon">💰</span>
-                                            {formatSalary(job.salary)}
-                                        </p>
-                                    )}
-                                    <p className="location">
-                                        <span className="icon">📍</span>
-                                        {job.location || 'Location not specified'}
-                                    </p>
-                                    <p className="remote-status">
-                                        <span className="icon">🏢</span>
-                                        {job.remoteStatus}
-                                    </p>
-                                    <p className="date">
-                                        <span className="icon">📅</span>
-                                        Applied: {job.appliedDate ? new Date(job.appliedDate).toLocaleDateString() : 'Not applied yet'}
-                                    </p>
+                                    <p className="position">{job.position}</p>
+                                    <div className="job-details">
+                                        <p><strong>Location:</strong> {job.location || 'Not specified'}</p>
+                                        <p><strong>Work Type:</strong> {job.remoteStatus}</p>
+                                        {job.salary && <p><strong>Salary:</strong> ${job.salary.toLocaleString()}</p>}
+                                        {job.appliedDate && (
+                                            <p><strong>Applied:</strong> {new Date(job.appliedDate).toLocaleDateString()}</p>
+                                        )}
+                                    </div>
                                     {job.deadlines && job.deadlines.length > 0 && (
                                         <div className="deadlines">
-                                            <p className="deadline-title">
-                                                <span className="icon">⏰</span>
-                                                Upcoming Deadlines:
-                                            </p>
-                                            {job.deadlines.map((deadline, index) => (
-                                                <p key={index} className="deadline-item">
-                                                    {deadline.title}: {new Date(deadline.date).toLocaleDateString()}
-                                                </p>
-                                            ))}
+                                            <h4>Deadlines</h4>
+                                            <ul>
+                                                {job.deadlines.map((deadline, index) => (
+                                                    <li key={index}>
+                                                        {deadline.title}: {new Date(deadline.date).toLocaleDateString()}
+                                                    </li>
+                                                ))}
+                                            </ul>
                                         </div>
                                     )}
-                                    <button
-                                        onClick={() => navigate(`/application/${job._id}`)}
-                                        className="view-button"
-                                    >
-                                        View Details
-                                    </button>
+                                    <div className="job-actions">
+                                        {job.url && (
+                                            <a href={job.url} target="_blank" rel="noopener noreferrer" className="job-link">
+                                                View Job Post
+                                            </a>
+                                        )}
+                                        <Link to={`/edit-application/${job._id}`} className="edit-button">
+                                            Edit
+                                        </Link>
+                                    </div>
                                 </div>
                             ))}
                         </div>

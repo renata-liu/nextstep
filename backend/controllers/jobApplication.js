@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const { JobApplication } = require('../models');
 const { auth } = require('../middleware/auth');
+const mongoose = require('mongoose');
 
 // Test endpoint - Get all job applications
 router.get('/test', async (req, res) => {
@@ -43,9 +44,34 @@ router.post('/test', async (req, res) => {
 // Get all job applications for the authenticated user
 router.get('/', auth, async (req, res) => {
     try {
+        console.log('\n=== GET /jobs Debug ===');
+        console.log('User ID:', req.user._id);
+        console.log('User object:', req.user);
+
         const jobs = await JobApplication.find({ userId: req.user._id });
+        console.log('Query result:', {
+            count: jobs.length,
+            isEmpty: jobs.length === 0,
+            firstJob: jobs[0] ? { id: jobs[0]._id, company: jobs[0].company } : null
+        });
+
+        // Check if collection exists and has documents
+        const collections = await mongoose.connection.db.listCollections().toArray();
+        const jobCollection = collections.find(c => c.name === 'jobapplications');
+        console.log('Collection info:', {
+            exists: !!jobCollection,
+            name: jobCollection?.name,
+            type: jobCollection?.type
+        });
+
+        if (jobCollection) {
+            const totalJobs = await JobApplication.countDocuments({});
+            console.log('Total jobs in collection:', totalJobs);
+        }
+
         res.json(jobs);
     } catch (error) {
+        console.error('Error in GET /jobs:', error);
         res.status(500).json({ message: error.message });
     }
 });
